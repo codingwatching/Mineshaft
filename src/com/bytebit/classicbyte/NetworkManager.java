@@ -61,8 +61,6 @@ public class NetworkManager {
 	
 	private static String server_extensions = "";
 	
-	private byte[] input_buffer = new byte[16384*4];
-	private int input_buffer_index = 0;
 	private int[] packet_len = {130,0,0,1027,6,0,7,73,9,6,4,3,1,65,64,1,66,68,2,1,2,133,195,0,2,7,85,1,3,65,68,1,7,137};
 	
 	private MediaPlayer beep_sound;

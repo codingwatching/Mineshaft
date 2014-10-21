@@ -42,8 +42,6 @@ public class EntityPlayer {
 	
 	private int player_id = -1;
 	
-	private Cube model = new Cube();
-	
 	private boolean cached_skin = false;
 	private Bitmap chached_skin_bitmap = null;
 	

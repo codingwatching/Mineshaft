@@ -78,65 +78,6 @@ public class ClassicByteView extends GLSurfaceView implements Runnable {
 	public Map<Integer, EventData> eventDataMap = new HashMap<Integer, EventData>();
 	
 	public boolean onTouchEvent(MotionEvent event) {
-		/*try {
-			int pointerCount = event.getPointerCount();
-	    	
-	    	for (int i = 0; i < pointerCount; i++)
-	    	{
-	    		int x = (int) event.getX(i);
-	    		int y = (int) event.getY(i);    		
-	    		int id = event.getPointerId(i);
-	    		int action = event.getActionMasked();
-	    		//int actionIndex = event.getActionIndex();
-	    		
-	    		
-	    		switch (action)
-	    		{
-	    			case MotionEvent.ACTION_DOWN:
-	    			case MotionEvent.ACTION_POINTER_DOWN:
-	    				ClassicByteView.pointers.add(id, new Point(event,x,y,x,y));
-	    				break;
-	    			case MotionEvent.ACTION_UP:
-	    			case MotionEvent.ACTION_POINTER_UP:
-	    				if(event.getRawX()<this.renderer.height/2.0F && event.getRawX()<this.renderer.height/2.0F && event.getRawY()>this.renderer.height-this.renderer.height/2.0F && event.getRawY()>this.renderer.height-this.renderer.height/2.0F) {
-	    					IngameRenderer.joystick_x = 0.0F;
-	    					IngameRenderer.joystick_y = 0.0F;
-	    				}
-	    				ClassicByteView.pointers.remove(id);
-	    				break;	
-	    			case MotionEvent.ACTION_MOVE:
-	    				Point p = ClassicByteView.pointers.get(id);
-	    				p.event = event;
-	    				p.last_x = p.x;
-	    				p.last_y = p.y;
-	    				p.x = x;
-	    				p.y = y;
-	    				ClassicByteView.pointers.set(id, p);
-	    				//if(p.start_x)
-	    				float difference_x = p.x-p.last_x;
-		        		float difference_y = p.y-p.last_y;
-		        		this.renderer.player.camera_rot_x = this.renderer.player.camera_rot_x + difference_x*0.01F;
-	        			this.renderer.player.camera_rot_y = this.renderer.player.camera_rot_y + difference_y*0.01F;
-	    				break;
-	    		}
-	    	*/
-			
-			/*if(event.getActionMasked()==MotionEvent.ACTION_POINTER_DOWN) {
-				ClassicByteView.pointers.add(event.getPointerId(event.getActionIndex())+0, new Point(event,event.getX(event.getActionIndex()), event.getY(event.getActionIndex()), event.getX(event.getActionIndex()), event.getY(event.getActionIndex())));
-			}
-			if(event.getActionMasked()==MotionEvent.ACTION_POINTER_UP) {
-				//ClassicByteView.pointers.set(event.getPointerId(event.getActionIndex())+0, null);
-				ClassicByteView.pointers.remove(event.getPointerId(event.getActionIndex())+0);
-			}
-			
-			if(event.getActionMasked()==MotionEvent.ACTION_MOVE) {
-				Point p = ClassicByteView.pointers.get(event.getPointerId(event.getActionIndex()));
-				p.x = event.getX(event.getActionIndex());
-				p.y = event.getY(event.getActionIndex());
-				p.event = event;
-				ClassicByteView.pointers.set(event.getPointerId(event.getActionIndex())+0, p);
-			}*/
-			
 			if(event.getAction()==MotionEvent.ACTION_UP && ClassicByteView.current_screen!=null) {
 				ClassicByteView.current_screen.onTouch(Math.round(event.getX()), Math.round(event.getY()), true, false);
 			}
@@ -149,46 +90,6 @@ public class ClassicByteView extends GLSurfaceView implements Runnable {
 			this.last_touch_x = (int)event.getX();
 			this.last_touch_y = (int)event.getY();
 			
-			/*if(event.getAction()==MotionEvent.ACTION_DOWN && ClassicByteView.current_screen==null && event.getX()>=0 && event.getX()<TextureManager.getBitmap(27).getWidth() && event.getY()>this.renderer.height-TextureManager.getBitmap(27).getHeight() && event.getY()<this.renderer.height) {
-				((ClassicByte)this.getContext()).openInputRequester("Chat", "", false, "send_chat");
-			}
-			if(event.getAction()==MotionEvent.ACTION_DOWN && ClassicByteView.current_screen==null && event.getX()>=(ClassicByte.view.renderer.width-TextureManager.getBitmap(29).getWidth())/2 && event.getX()<(ClassicByte.view.renderer.width-TextureManager.getBitmap(29).getWidth())/2+TextureManager.getBitmap(29).getWidth() && event.getY()>ClassicByte.view.renderer.height-TextureManager.getBitmap(29).getHeight() && event.getY()<this.renderer.height) {
-				this.renderer.player.setPosition(this.renderer.player.getXPosition(), this.renderer.player.getYPosition()+2.0F, this.renderer.player.getZPosition());
-			}
-			
-			IngameRenderer.current_button = 0;
-			if(ClassicByteView.current_screen==null && event.getX()>=0 && event.getX()<TextureManager.getBitmap(27).getWidth() && event.getY()>this.renderer.height-TextureManager.getBitmap(27).getHeight() && event.getY()<this.renderer.height) {
-				if(event.getAction()==MotionEvent.ACTION_MOVE || event.getAction()==MotionEvent.ACTION_DOWN) {
-					IngameRenderer.current_button = 1;
-				}
-			}
-			if(ClassicByteView.current_screen==null && event.getX()>=(ClassicByte.view.renderer.width-TextureManager.getBitmap(29).getWidth())/2 && event.getX()<(ClassicByte.view.renderer.width-TextureManager.getBitmap(29).getWidth())/2+TextureManager.getBitmap(29).getWidth() && event.getY()>ClassicByte.view.renderer.height-TextureManager.getBitmap(29).getHeight() && event.getY()<this.renderer.height) {
-				if(event.getAction()==MotionEvent.ACTION_MOVE || event.getAction()==MotionEvent.ACTION_DOWN) {
-					IngameRenderer.current_button = 2;
-				}
-			}
-			if(ClassicByteView.current_screen==null && event.getX()>=TextureManager.getBitmap(32).getWidth() && event.getX()<TextureManager.getBitmap(32).getWidth()*2 && event.getY()>this.renderer.height-TextureManager.getBitmap(32).getHeight() && event.getY()<this.renderer.height) {
-				if(event.getAction()==MotionEvent.ACTION_MOVE || event.getAction()==MotionEvent.ACTION_DOWN) {
-					IngameRenderer.current_button = 3;
-				}
-			}
-			if(ClassicByteView.current_screen==null && event.getX()>=(ClassicByte.view.renderer.width-TextureManager.getBitmap(35).getWidth()) && event.getX()<(ClassicByte.view.renderer.width-TextureManager.getBitmap(35).getWidth())+TextureManager.getBitmap(35).getWidth() && event.getY()>this.renderer.height-TextureManager.getBitmap(32).getHeight() && event.getY()<this.renderer.height) {
-				if(event.getAction()==MotionEvent.ACTION_MOVE || event.getAction()==MotionEvent.ACTION_DOWN) {
-					IngameRenderer.current_button = 4;
-				}
-				if(event.getAction()==MotionEvent.ACTION_UP) {
-					IngameRenderer.show_block_selection = !IngameRenderer.show_block_selection;
-				}
-			}
-			
-			if(event.getAction()==MotionEvent.ACTION_DOWN && ClassicByteView.current_screen==null && IngameRenderer.isPaused) {
-				IngameRenderer.isPaused = false;
-				ClassicByte.view.renderer.networkManager.disconnect();
-				ClassicByte.view.setScreen(new ScreenMainMenu(ClassicByte.view));
-			}
-		} catch(Exception e) {}
-		*/
-		//return true;
 			int action = event.getActionMasked();
 
 		    int pointerIndex = event.getActionIndex();

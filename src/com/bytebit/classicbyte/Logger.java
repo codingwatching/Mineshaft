@@ -28,30 +28,16 @@ public class Logger implements Thread.UncaughtExceptionHandler {
 	
 	private static Logger exception_handler = new Logger();
 	public static boolean enabled = true;
-	private static PrintWriter log_file_out = null;
-	private static boolean init = false;
 	
 	public static Logger getExceptionHandler() {
 		return exception_handler;
 	}
 	
 	public static void log(Object c, String message) {
-		/*if(init && Logger.enabled) {
-			File f = new File(Environment.getExternalStorageDirectory().toString()+"/classicbytelog2.txt");
-			MediaFile m = new MediaFile(ClassicByte.view.getContext().getContentResolver(),f);
-			System.err.println(f.toString());
-			try {
-				m.delete();
-				log_file_out = new PrintWriter(m.write());
-			} catch(Exception e) { System.err.println(e.getMessage()); }
-			init = false;
-		}*/
 		if(Logger.enabled && c!=null) {
-			//log_file_out.println("["+c.getClass().getName()+"] "+message);
 			System.err.println("["+c.getClass().getName()+"] "+message);
 		}
 		if(Logger.enabled && c==null) {
-			//log_file_out.println("[unknown location] "+message);
 			System.err.println("[unknown location] "+message);
 		}
 	}
@@ -115,7 +101,7 @@ public class Logger implements Thread.UncaughtExceptionHandler {
         errorReport.append(Build.VERSION.INCREMENTAL);
         errorReport.append(LINE_SEPARATOR);
 
-        Intent intent = new Intent(ClassicByte.view.getContext(), AnotherActivity.class);
+        Intent intent = new Intent(ClassicByte.view.getContext(), CrashReport.class);
         intent.putExtra("error", errorReport.toString());
         ClassicByte.view.getContext().startActivity(intent);
 

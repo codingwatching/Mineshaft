@@ -26,8 +26,6 @@ import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.PorterDuff.Mode;
 import android.opengl.GLES10;
 import android.opengl.GLSurfaceView;
@@ -61,7 +59,7 @@ public class ClassicByteRenderer implements GLSurfaceView.Renderer {
 	
 	public void onDrawFrame(GL10 gl) {
 		long time = System.currentTimeMillis();
-		GLES10.glClearColor((float)this.world.getSkyColorRedValue()/255.0F, (float)this.world.getSkyColorGreenValue()/255.0F, (float)this.world.getSkyColorBlueValue()/255.0F, 1.0F);
+		GLES10.glClearColor(230.0F/255.0F, 243.0F/255.0F, 255.0F/255.0F, 1.0F);
 		GLES10.glClear(GLES10.GL_DEPTH_BUFFER_BIT | GLES10.GL_COLOR_BUFFER_BIT);
 		
 		if(ClassicByteView.current_screen==null) {
@@ -376,8 +374,6 @@ public class ClassicByteRenderer implements GLSurfaceView.Renderer {
 		if(ClassicByteView.current_screen!=null) {
 			ClassicByteView.current_screen.parent = this.parent;
 			ClassicByteView.current_screen.draw(c);
-		} else {
-			//IngameRenderer.render2D(c);
 		}
 			    
 			    
@@ -389,8 +385,6 @@ public class ClassicByteRenderer implements GLSurfaceView.Renderer {
 		
 		if(ClassicByteView.current_screen!=null) {
 			TextureManager.bindTexture(20);
-		} else {
-			//Logger.log(this, IngameRenderer.CHAT_STATUS_1);
 		}
 			    
 		GLES10.glMatrixMode(GLES10.GL_PROJECTION);
@@ -565,16 +559,11 @@ public class ClassicByteRenderer implements GLSurfaceView.Renderer {
 		TextureManager.loadTextureFromBitmap(TextureManager.scaleBitmap(TextureManager.getBitmap(33), Math.round(this.width*0.06F), Math.round(this.width*0.06F)), 33);
 		TextureManager.loadTextureFromBitmap(TextureManager.scaleBitmap(TextureManager.getBitmap(34), Math.round(this.width*0.06F), Math.round(this.width*0.06F)), 34);
 		TextureManager.loadTextureFromBitmap(TextureManager.scaleBitmap(TextureManager.getBitmap(35), Math.round(this.width*0.06F), Math.round(this.width*0.06F)), 35);
-		/*TextureManager.loadTextureFromBitmap(TextureManager.scaleBitmap(TextureManager.getBitmap(36), Math.round(this.width*0.2F), Math.round(this.width*0.2F)), 36);
-		TextureManager.loadTextureFromBitmap(TextureManager.scaleBitmap(TextureManager.getBitmap(37), Math.round(this.width*0.08F), Math.round(this.width*0.08F)), 37);*/
 		TextureManager.loadTextureFromBitmap(TextureManager.scaleBitmap(TextureManager.getBitmap(41), Math.round(this.width*0.6F), Math.round(this.width*0.6F)), 41);
 	}
 
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		//this.background_music = MediaPlayer.create(this.parent.getContext(), R.drawable.keygsubtonal);
-		//background_music.setLooping(true);
-		//background_music.start();
-        this.parent.setScreen(new ScreenLogo(this.parent));
+		this.parent.setScreen(new ScreenLogo(this.parent));
 		GLES10.glEnable(GLES10.GL_DEPTH_TEST);
 		GLES10.glDepthFunc(GLES10.GL_LESS);
 		GLES10.glHint(GLES10.GL_PERSPECTIVE_CORRECTION_HINT, GLES10.GL_NICEST);

@@ -31,7 +31,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.bytebit.classicbyte.AnotherActivity"
+            android:name="com.bytebit.classicbyte.CrashReport"
             android:label="Crash Report" >
         </activity>
     </application>

@@ -62,7 +62,6 @@ public class World {
 	}
 	
 	public boolean canBlockSeeTheSky(int x, int y, int z) {
-		int a;
 		for(int k=y+1;k!=this.y_size;k++) {
 			if(!this.isAir(x, k, z)) {
 				return false;
