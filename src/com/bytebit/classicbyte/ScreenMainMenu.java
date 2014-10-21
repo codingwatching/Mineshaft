@@ -1,5 +1,5 @@
 /*
-Ace of Spades remake
+Mineshaft
 Copyright (C) 2014 ByteBit
 
 This program is free software; you can redistribute it and/or modify it under the terms of
@@ -13,6 +13,7 @@ See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with this program;
 if not, see <http://www.gnu.org/licenses/>.
 */
+
 
 
 package com.bytebit.classicbyte;
@@ -103,7 +104,7 @@ public class ScreenMainMenu extends Screen {
 	    	this.parent.standard_paint.setColor(Color.WHITE);
 	    	this.parent.standard_paint.setTextSize(this.parent.renderer.height*0.25F);
 	    	this.parent.standard_paint.getTextBounds("Nothing here", 0, "Nothing here".length(), bounds);
-	    	c.drawText("Nothig here", (this.parent.renderer.width-bounds.width())/2, this.parent.renderer.height*0.5F, this.parent.standard_paint);
+	    	c.drawText("Nothing here", (this.parent.renderer.width-bounds.width())/2, this.parent.renderer.height*0.5F, this.parent.standard_paint);
 	    }
 	    
 	    for(int k=0;k!=10;k++) {

@@ -1,5 +1,5 @@
 /*
-Ace of Spades remake
+Mineshaft
 Copyright (C) 2014 ByteBit
 
 This program is free software; you can redistribute it and/or modify it under the terms of
@@ -37,10 +37,10 @@ public class ChunkListUpdater implements Runnable {
 		
 		fx[0] = (float)(ClassicByte.view.renderer.player.getXPosition()-8*Math.cos(ClassicByte.view.renderer.player.camera_rot_x) + 8*Math.sin(ClassicByte.view.renderer.player.camera_rot_x));
 		fy[0] = (float)(ClassicByte.view.renderer.player.getZPosition()-8*Math.sin(ClassicByte.view.renderer.player.camera_rot_x) - 8*Math.cos(ClassicByte.view.renderer.player.camera_rot_x));
-		fx[1] = (float)(ClassicByte.view.renderer.player.getXPosition()+32*Math.cos(ClassicByte.view.renderer.player.camera_rot_x-((float)Math.PI/180F*60F)) + 32*Math.sin(ClassicByte.view.renderer.player.camera_rot_x-((float)Math.PI/180F*60F)));
-		fy[1] = (float)(ClassicByte.view.renderer.player.getZPosition()+32*Math.sin(ClassicByte.view.renderer.player.camera_rot_x-((float)Math.PI/180F*60F)) - 32*Math.cos(ClassicByte.view.renderer.player.camera_rot_x-((float)Math.PI/180F*60F)));
-		fx[2] = (float)(ClassicByte.view.renderer.player.getXPosition()+32*Math.cos(ClassicByte.view.renderer.player.camera_rot_x+((float)Math.PI/180F*60F)) + 32*Math.sin(ClassicByte.view.renderer.player.camera_rot_x+((float)Math.PI/180F*60F)));
-		fy[2] = (float)(ClassicByte.view.renderer.player.getZPosition()+32*Math.sin(ClassicByte.view.renderer.player.camera_rot_x+((float)Math.PI/180F*60F)) - 32*Math.cos(ClassicByte.view.renderer.player.camera_rot_x+((float)Math.PI/180F*60F)));
+		fx[1] = (float)(ClassicByte.view.renderer.player.getXPosition()+48*Math.cos(ClassicByte.view.renderer.player.camera_rot_x-((float)Math.PI/180F*60F)) + 48*Math.sin(ClassicByte.view.renderer.player.camera_rot_x-((float)Math.PI/180F*60F)));
+		fy[1] = (float)(ClassicByte.view.renderer.player.getZPosition()+48*Math.sin(ClassicByte.view.renderer.player.camera_rot_x-((float)Math.PI/180F*60F)) - 48*Math.cos(ClassicByte.view.renderer.player.camera_rot_x-((float)Math.PI/180F*60F)));
+		fx[2] = (float)(ClassicByte.view.renderer.player.getXPosition()+48*Math.cos(ClassicByte.view.renderer.player.camera_rot_x+((float)Math.PI/180F*60F)) + 48*Math.sin(ClassicByte.view.renderer.player.camera_rot_x+((float)Math.PI/180F*60F)));
+		fy[2] = (float)(ClassicByte.view.renderer.player.getZPosition()+48*Math.sin(ClassicByte.view.renderer.player.camera_rot_x+((float)Math.PI/180F*60F)) - 48*Math.cos(ClassicByte.view.renderer.player.camera_rot_x+((float)Math.PI/180F*60F)));
 		
 		int local_x = (int)(ClassicByte.view.renderer.player.getXPosition()/t);
 		int local_z = (int)(ClassicByte.view.renderer.player.getZPosition()/t);

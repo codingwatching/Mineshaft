@@ -1,5 +1,5 @@
 /*
-Ace of Spades remake
+Mineshaft
 Copyright (C) 2014 ByteBit
 
 This program is free software; you can redistribute it and/or modify it under the terms of
@@ -13,7 +13,6 @@ See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with this program;
 if not, see <http://www.gnu.org/licenses/>.
 */
-
 
 package com.bytebit.classicbyte;
 
@@ -40,8 +39,8 @@ public class ClassicByte extends Activity implements OnClickListener {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		//StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build(); 
-		//StrictMode.setThreadPolicy(policy);
+		/*StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build(); 
+		StrictMode.setThreadPolicy(policy);*/
 		//long memory = Runtime.getRuntime().maxMemory()/1024/1024;
 		//if(memory<64) {
 			//VMRuntime.getRuntime().setMinimumHeapSize(128*1024*1024);
@@ -94,7 +93,7 @@ public class ClassicByte extends Activity implements OnClickListener {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.classic_byte, menu);
+		//getMenuInflater().inflate(R.menu.classic_byte, menu);
 		return true;
 	}
 	

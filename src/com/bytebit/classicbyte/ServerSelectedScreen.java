@@ -1,5 +1,5 @@
 /*
-Ace of Spades remake
+Mineshaft
 Copyright (C) 2014 ByteBit
 
 This program is free software; you can redistribute it and/or modify it under the terms of
@@ -86,7 +86,7 @@ public class ServerSelectedScreen extends Screen {
 			this.map_overview = Bitmap.createBitmap(this.parent.renderer.world.x_size, this.parent.renderer.world.z_size, Config.ARGB_8888);
 			for(int z=0;z!=this.parent.renderer.world.z_size;z++) {
 				for(int x=0;x!=this.parent.renderer.world.x_size;x++) {
-					int a = Block.BLOCK_AIR;
+					int a = this.parent.renderer.world.y_size;
 					for(int k=this.parent.renderer.world.y_size;k!=0;k--) {
 						a = this.parent.renderer.world.getBlock(x, k, z);
 						if(a!=Block.BLOCK_AIR && a!=Block.BLOCK_GLASS) {
@@ -111,17 +111,23 @@ public class ServerSelectedScreen extends Screen {
 		this.parent.standard_paint.setTextSize(this.parent.renderer.width*0.03F);
 		String motd = ClassicByte.view.renderer.networkManager.current_server_motd;
 		this.hack_state = "Rules: none";
+		if(motd.contains("hax")) {
+			this.hack_state = "Rules: "; 
+		}
 		if(motd.contains("+ophax")) {
-			this.hack_state = "Rules: ops can fly";
+			this.hack_state = this.hack_state+"ops, ";
 		}
 		if(motd.contains("+hax")) {
-			this.hack_state = "Rules: everyone can fly";
+			this.hack_state = this.hack_state+"everyone, ";
 		}
 		if(motd.contains("-hax")) {
-			this.hack_state = "Rules: no one can fly";
+			this.hack_state = this.hack_state+"nobody, ";
 		}
-		c.drawText("Motd:", (this.parent.renderer.width-TextureManager.getBitmap(10).getWidth())/2+this.parent.renderer.width*0.02F, this.parent.renderer.width*0.08F+this.parent.renderer.width*0.12F+this.parent.standard_paint.getTextSize()*3.0F, this.parent.standard_paint);
-		c.drawText(motd, (this.parent.renderer.width-TextureManager.getBitmap(10).getWidth())/2+this.parent.renderer.width*0.02F, this.parent.renderer.width*0.08F+this.parent.renderer.width*0.12F+this.parent.standard_paint.getTextSize()*4.0F, this.parent.standard_paint);
+		if(motd.contains("hax")) {
+			this.hack_state = this.hack_state+"can fly";
+		}
+		c.drawText(motd, (this.parent.renderer.width-TextureManager.getBitmap(10).getWidth())/2+this.parent.renderer.width*0.02F, this.parent.renderer.width*0.08F+this.parent.renderer.width*0.12F+this.parent.standard_paint.getTextSize()*3.0F, this.parent.standard_paint);
+		//c.drawText(motd, (this.parent.renderer.width-TextureManager.getBitmap(10).getWidth())/2+this.parent.renderer.width*0.02F, this.parent.renderer.width*0.08F+this.parent.renderer.width*0.12F+this.parent.standard_paint.getTextSize()*4.0F, this.parent.standard_paint);
 		c.drawText(this.hack_state, (this.parent.renderer.width-TextureManager.getBitmap(10).getWidth())/2+this.parent.renderer.width*0.02F, this.parent.renderer.width*0.08F+this.parent.renderer.width*0.12F+this.parent.standard_paint.getTextSize()*5.5F, this.parent.standard_paint);
 		if(ClassicByte.view.renderer.player.isOp()) {
 			c.drawText("Permission: op", (this.parent.renderer.width-TextureManager.getBitmap(10).getWidth())/2+this.parent.renderer.width*0.02F, this.parent.renderer.width*0.08F+this.parent.renderer.width*0.12F+this.parent.standard_paint.getTextSize()*6.5F, this.parent.standard_paint);

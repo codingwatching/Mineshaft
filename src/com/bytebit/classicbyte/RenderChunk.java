@@ -1,5 +1,5 @@
 /*
-Ace of Spades remake
+Mineshaft
 Copyright (C) 2014 ByteBit
 
 This program is free software; you can redistribute it and/or modify it under the terms of
@@ -13,6 +13,7 @@ See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with this program;
 if not, see <http://www.gnu.org/licenses/>.
 */
+
 
 
 package com.bytebit.classicbyte;
@@ -62,19 +63,19 @@ public class RenderChunk {
 	}
 	
 	public void buildVBO() {
-		Logger.log(this, "Building vbo at position "+(this.x_start_position/16)+" - "+(this.z_start_position/16));
+		Logger.log(this, "Building vbo at position "+(this.x_start_position/CHUNK_LENGTH_OF_BORDER)+" - "+(this.z_start_position/CHUNK_LENGTH_OF_BORDER));
 		if(this.vbo_index_vertices!=-1) {
 			int[] f = {this.vbo_index_texture, this.vbo_index_vertices};
 			GLES20.glDeleteBuffers(2, f, 0);
 			this.vbo_index_vertices = -1;
 			this.vbo_index_texture = -1;
 			this.vbo_size = 0;
-			Logger.log(this, "Deleted vbo at position "+(this.x_start_position/16)+" - "+(this.z_start_position/16));
+			Logger.log(this, "Deleted vbo at position "+(this.x_start_position/CHUNK_LENGTH_OF_BORDER)+" - "+(this.z_start_position/CHUNK_LENGTH_OF_BORDER));
 		}
 		this.chunk_size = 0;
 		int max_blocks_to_be_rendered = 0;
-		for(int z=this.z_start_position;z!=this.z_start_position+16;z++) {
-			for(int x=this.x_start_position;x!=this.x_start_position+16;x++) {
+		for(int z=this.z_start_position;z!=this.z_start_position+CHUNK_LENGTH_OF_BORDER;z++) {
+			for(int x=this.x_start_position;x!=this.x_start_position+CHUNK_LENGTH_OF_BORDER;x++) {
 				for(int y=0;y!=this.world.y_size;y++) {
 					int id = this.world.getBlock(x, y, z);
 					if(id!=0) {
@@ -103,12 +104,11 @@ public class RenderChunk {
 		this.init((int)((max_blocks_to_be_rendered*256)/1024.0F)+1);
 		this.texturecoords.position(0);
 		this.vertices.position(0);
-		for(int z2=this.z_start_position;z2!=this.z_start_position+16;z2++) {
-			for(int x2=this.x_start_position;x2!=this.x_start_position+16;x2++) {
+		for(int z2=this.z_start_position;z2!=this.z_start_position+CHUNK_LENGTH_OF_BORDER;z2++) {
+			for(int x2=this.x_start_position;x2!=this.x_start_position+CHUNK_LENGTH_OF_BORDER;x2++) {
 				for(int y2=0;y2!=this.world.y_size;y2++) {
 					int id = this.world.getBlock(x2, y2, z2);
 					if(id!=0) {
-						
 						int pos = Block.getBlockPositionInTextureMap(id);
 						int r = (pos >> 16) & 0xFF;
 						int g = (pos >> 8) & 0xFF;
@@ -233,13 +233,67 @@ public class RenderChunk {
 					    yt_z_down = yt_z_down*b;
 					    
 					    int model = Block.getModel(id);
+					    boolean render_if_same_type = Block.renderSideIfConnectedToSameType(id);
 					    
 					    int x = x2*2;
 					    int y = y2*2;
 					    int z = z2*2;
 						
 						if(model==0) {
-							if(Block.isTranslucent(this.world.getBlock(x2, y2-1, z2))) {
+						    int block_below = this.world.getBlock(x2, y2-1, z2);
+						    int block_above = this.world.getBlock(x2, y2+1, z2);
+						    int block_west = this.world.getBlock(x2+1, y2, z2);
+						    int block_east = this.world.getBlock(x2-1, y2, z2);
+						    int block_north = this.world.getBlock(x2, y2, z2+1);
+						    int block_south = this.world.getBlock(x2, y2, z2-1);
+							boolean render_side_a = false;
+							boolean render_side_b = false;
+							boolean render_side_c = false;
+							boolean render_side_d = false;
+							boolean render_side_e = false;
+							boolean render_side_f = false;
+							
+							if(Block.isTranslucent(block_below)) {
+								render_side_a = true;
+							}
+							if(Block.isTranslucent(block_above)) {
+								render_side_b = true;
+							}
+							if(Block.isTranslucent(block_west)) {
+								render_side_c = true;
+							}
+							if(Block.isTranslucent(block_east)) {
+								render_side_d = true;
+							}
+							if(Block.isTranslucent(block_north)) {
+								render_side_e = true;
+							}
+							if(Block.isTranslucent(block_south)) {
+								render_side_f = true;
+							}
+							
+							if(!render_if_same_type) {
+								if(id==block_below) {
+									render_side_a = false;
+								}
+								if(id==block_above) {
+									render_side_b = false;
+								}
+								if(id==block_west) {
+									render_side_c = false;
+								}
+								if(id==block_east) {
+									render_side_d = false;
+								}
+								if(id==block_north) {
+									render_side_e = false;
+								}
+								if(id==block_south) {
+									render_side_f = false;
+								}
+							}
+								
+							if(render_side_a) {
 								short d[] = {
 										(short)(0+x),(short)(0+y),(short)(2+z),
 										(short)(2+x),(short)(0+y),(short)(2+z),
@@ -261,7 +315,7 @@ public class RenderChunk {
 								this.chunk_size++;
 								//Logger.log(this, this.chunk_size+" - "+max_blocks_to_be_rendered);
 							}
-							if(Block.isTranslucent(this.world.getBlock(x2, y2+1, z2))) {
+							if(render_side_b) {
 								short d[] = {
 										(short)(0+x),(short)(2+y),(short)(2+z),
 										(short)(2+x),(short)(2+y),(short)(2+z),
@@ -283,7 +337,7 @@ public class RenderChunk {
 								this.chunk_size++;
 								//Logger.log(this, this.chunk_size+" - "+max_blocks_to_be_rendered);
 							}
-							if(Block.isTranslucent(this.world.getBlock(x2+1, y2, z2))) {
+							if(render_side_c) {
 								short d[] = {
 										(short)(2+x),(short)(0+y),(short)(2+z),
 										(short)(2+x),(short)(2+y),(short)(2+z),
@@ -305,7 +359,7 @@ public class RenderChunk {
 								this.chunk_size++;
 								//Logger.log(this, this.chunk_size+" - "+max_blocks_to_be_rendered);
 							}
-							if(Block.isTranslucent(this.world.getBlock(x2-1, y2, z2))) {
+							if(render_side_d) {
 								short d[] = {
 										(short)(0+x),(short)(0+y),(short)(2+z),
 										(short)(0+x),(short)(2+y),(short)(2+z),
@@ -328,7 +382,7 @@ public class RenderChunk {
 								//Logger.log(this, this.chunk_size+" - "+max_blocks_to_be_rendered);
 							}
 							
-							if(Block.isTranslucent(this.world.getBlock(x2, y2, z2+1))) {
+							if(render_side_e) {
 								short d[] = {
 										(short)(0+x),(short)(0+y),(short)(2+z),
 										(short)(2+x),(short)(0+y),(short)(2+z),
@@ -350,7 +404,7 @@ public class RenderChunk {
 								this.chunk_size++;
 								//Logger.log(this, this.chunk_size+" - "+max_blocks_to_be_rendered);
 							}
-							if(Block.isTranslucent(this.world.getBlock(x2, y2, z2-1))) {
+							if(render_side_f) {
 								short d[] = {
 										(short)(0+x),(short)(0+y),(short)(0+z),
 										(short)(2+x),(short)(0+y),(short)(0+z),

@@ -1,5 +1,5 @@
 /*
-Ace of Spades remake
+Mineshaft
 Copyright (C) 2014 ByteBit
 
 This program is free software; you can redistribute it and/or modify it under the terms of
@@ -13,7 +13,6 @@ See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with this program;
 if not, see <http://www.gnu.org/licenses/>.
 */
-
 
 package com.bytebit.classicbyte;
 
@@ -37,10 +36,10 @@ public class Tesselator {
 		this.type = type;
 		
 		if(this.vertices==null && this.texture_coords==null) {
-			ByteBuffer b = ByteBuffer.allocateDirect(1200);
+			ByteBuffer b = ByteBuffer.allocateDirect(3072);
 			b.order(ByteOrder.nativeOrder());
 			this.vertices = b.asFloatBuffer();
-			ByteBuffer b2 = ByteBuffer.allocateDirect(800);
+			ByteBuffer b2 = ByteBuffer.allocateDirect(2048);
 			b2.order(ByteOrder.nativeOrder());
 			this.texture_coords = b2.asFloatBuffer();
 		}

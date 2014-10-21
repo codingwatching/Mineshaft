@@ -45,34 +45,34 @@ public final class R {
         public static final int button_scrollbar=0x7f020015;
         public static final int button_up=0x7f020016;
         public static final int button_up_highlighted=0x7f020017;
-        public static final int donate=0x7f020018;
-        public static final int ic_launcher=0x7f020019;
-        public static final int info_background=0x7f02001a;
-        public static final int loading_background_a=0x7f02001b;
-        public static final int loading_background_b=0x7f02001c;
-        public static final int login_information_field=0x7f02001d;
-        public static final int logo=0x7f02001e;
-        public static final int map_background=0x7f02001f;
-        public static final int server_list_entry=0x7f020020;
-        public static final int skin=0x7f020021;
-        public static final int terrain=0x7f020022;
-        public static final int terrain_map=0x7f020023;
-        public static final int touch_controls=0x7f020024;
-        public static final int touch_controls_joystick=0x7f020025;
+        public static final int clouds=0x7f020018;
+        public static final int creator_logo=0x7f020019;
+        public static final int donate=0x7f02001a;
+        public static final int font=0x7f02001b;
+        public static final int ic_launcher=0x7f02001c;
+        public static final int info_background=0x7f02001d;
+        public static final int loading_background_a=0x7f02001e;
+        public static final int loading_background_b=0x7f02001f;
+        public static final int login_information_field=0x7f020020;
+        public static final int logo=0x7f020021;
+        public static final int map_background=0x7f020022;
+        public static final int rock=0x7f020023;
+        public static final int server_list_entry=0x7f020024;
+        public static final int skin=0x7f020025;
+        public static final int terrain=0x7f020026;
+        public static final int terrain_map=0x7f020027;
+        public static final int touch_controls=0x7f020028;
+        public static final int touch_controls_joystick=0x7f020029;
+        public static final int water=0x7f02002a;
     }
     public static final class id {
-        public static final int action_settings=0x7f080000;
+        public static final int error=0x7f070000;
     }
     public static final class layout {
-        public static final int activity_classic_byte=0x7f030000;
-    }
-    public static final class menu {
-        public static final int classic_byte=0x7f070000;
+        public static final int activity_main=0x7f030000;
     }
     public static final class string {
-        public static final int action_settings=0x7f050001;
         public static final int app_name=0x7f050000;
-        public static final int hello_world=0x7f050002;
     }
     public static final class style {
         /** 

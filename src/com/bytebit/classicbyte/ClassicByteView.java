@@ -1,5 +1,5 @@
 /*
-Ace of Spades remake
+Mineshaft
 Copyright (C) 2014 ByteBit
 
 This program is free software; you can redistribute it and/or modify it under the terms of
@@ -19,6 +19,8 @@ package com.bytebit.classicbyte;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.content.Context;
 import android.graphics.Paint;
@@ -39,7 +41,7 @@ public class ClassicByteView extends GLSurfaceView implements Runnable {
 	public int last_touch_x = 0;
 	public int last_touch_y = 0;
 	
-	public static AbstractList<Point> pointers = new ArrayList<Point>();
+	public static AbstractList<EventData> pointers = new ArrayList<EventData>();
 	
 	private long touch_update_timer = System.currentTimeMillis();
 	
@@ -49,11 +51,12 @@ public class ClassicByteView extends GLSurfaceView implements Runnable {
         this.setRenderer(renderer);
         this.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
         
-        this.renderer.setContext(this.getContext());
         this.renderer.setView(this);
         
         ClassicByte.view = this;
         Thread t = new Thread(this);
+        Thread.setDefaultUncaughtExceptionHandler(Logger.getExceptionHandler());
+        t.setUncaughtExceptionHandler(Logger.getExceptionHandler());
         t.start();
     }
 	
@@ -72,8 +75,10 @@ public class ClassicByteView extends GLSurfaceView implements Runnable {
 		return x;
 	}
 	
+	public Map<Integer, EventData> eventDataMap = new HashMap<Integer, EventData>();
+	
 	public boolean onTouchEvent(MotionEvent event) {
-		try {
+		/*try {
 			int pointerCount = event.getPointerCount();
 	    	
 	    	for (int i = 0; i < pointerCount; i++)
@@ -93,6 +98,10 @@ public class ClassicByteView extends GLSurfaceView implements Runnable {
 	    				break;
 	    			case MotionEvent.ACTION_UP:
 	    			case MotionEvent.ACTION_POINTER_UP:
+	    				if(event.getRawX()<this.renderer.height/2.0F && event.getRawX()<this.renderer.height/2.0F && event.getRawY()>this.renderer.height-this.renderer.height/2.0F && event.getRawY()>this.renderer.height-this.renderer.height/2.0F) {
+	    					IngameRenderer.joystick_x = 0.0F;
+	    					IngameRenderer.joystick_y = 0.0F;
+	    				}
 	    				ClassicByteView.pointers.remove(id);
 	    				break;	
 	    			case MotionEvent.ACTION_MOVE:
@@ -110,7 +119,7 @@ public class ClassicByteView extends GLSurfaceView implements Runnable {
 	        			this.renderer.player.camera_rot_y = this.renderer.player.camera_rot_y + difference_y*0.01F;
 	    				break;
 	    		}
-	    	}
+	    	*/
 			
 			/*if(event.getActionMasked()==MotionEvent.ACTION_POINTER_DOWN) {
 				ClassicByteView.pointers.add(event.getPointerId(event.getActionIndex())+0, new Point(event,event.getX(event.getActionIndex()), event.getY(event.getActionIndex()), event.getX(event.getActionIndex()), event.getY(event.getActionIndex())));
@@ -140,7 +149,7 @@ public class ClassicByteView extends GLSurfaceView implements Runnable {
 			this.last_touch_x = (int)event.getX();
 			this.last_touch_y = (int)event.getY();
 			
-			if(event.getAction()==MotionEvent.ACTION_DOWN && ClassicByteView.current_screen==null && event.getX()>=0 && event.getX()<TextureManager.getBitmap(27).getWidth() && event.getY()>this.renderer.height-TextureManager.getBitmap(27).getHeight() && event.getY()<this.renderer.height) {
+			/*if(event.getAction()==MotionEvent.ACTION_DOWN && ClassicByteView.current_screen==null && event.getX()>=0 && event.getX()<TextureManager.getBitmap(27).getWidth() && event.getY()>this.renderer.height-TextureManager.getBitmap(27).getHeight() && event.getY()<this.renderer.height) {
 				((ClassicByte)this.getContext()).openInputRequester("Chat", "", false, "send_chat");
 			}
 			if(event.getAction()==MotionEvent.ACTION_DOWN && ClassicByteView.current_screen==null && event.getX()>=(ClassicByte.view.renderer.width-TextureManager.getBitmap(29).getWidth())/2 && event.getX()<(ClassicByte.view.renderer.width-TextureManager.getBitmap(29).getWidth())/2+TextureManager.getBitmap(29).getWidth() && event.getY()>ClassicByte.view.renderer.height-TextureManager.getBitmap(29).getHeight() && event.getY()<this.renderer.height) {
@@ -178,148 +187,114 @@ public class ClassicByteView extends GLSurfaceView implements Runnable {
 				ClassicByte.view.setScreen(new ScreenMainMenu(ClassicByte.view));
 			}
 		} catch(Exception e) {}
-		
-		return true;
+		*/
+		//return true;
+			int action = event.getActionMasked();
+
+		    int pointerIndex = event.getActionIndex();
+		    int pointerId = event.getPointerId(pointerIndex);
+
+		    switch (action) {
+		    case MotionEvent.ACTION_DOWN:
+		    case MotionEvent.ACTION_POINTER_DOWN:
+		        EventData eventData = new EventData();
+		        eventData.x = event.getX(pointerIndex);
+		        eventData.y = event.getY(pointerIndex);
+		        eventData.x_start = eventData.x;
+		        eventData.y_start = eventData.y;
+		        eventDataMap.put(Integer.valueOf(pointerId), eventData);
+		        if(ClassicByteView.current_screen==null && IngameRenderer.isPaused) {
+					IngameRenderer.isPaused = false;
+					ClassicByte.view.renderer.networkManager.disconnect();
+					ClassicByte.view.setScreen(new ScreenMainMenu(ClassicByte.view));
+				}
+		        if(ClassicByteView.current_screen==null && !IngameRenderer.isPaused && Math.sqrt((eventData.x)*(eventData.x)+(eventData.y)*(eventData.y))<20.0F) {
+		        	((ClassicByte)this.getContext()).openInputRequester("Chat", "", false, "send_chat");
+				}
+		        break;
+		    case MotionEvent.ACTION_MOVE:
+		        for(int i = 0; i < event.getPointerCount(); i++)
+		        {
+		            int curPointerId = event.getPointerId(i);
+		            if(eventDataMap.containsKey(Integer.valueOf(curPointerId)))
+		            {
+		                EventData moveEventData = eventDataMap.get(Integer.valueOf(curPointerId));
+		                moveEventData.last_x = moveEventData.x;
+		                moveEventData.last_y = moveEventData.y;
+		                moveEventData.x = event.getX(i);
+		                moveEventData.y = event.getY(i);
+						if(!IngameRenderer.isPaused) {
+							if(moveEventData.x_start>this.renderer.height/2.0F || moveEventData.x_start>this.renderer.height/2.0F || moveEventData.y_start<this.renderer.height-this.renderer.height/2.0F || moveEventData.y_start<this.renderer.height-this.renderer.height/2.0F) {
+								float difference_x = moveEventData.x-moveEventData.last_x;
+								float difference_y = moveEventData.y-moveEventData.last_y;
+								this.renderer.player.camera_rot_x = this.renderer.player.camera_rot_x + difference_x*0.02F;
+								this.renderer.player.camera_rot_y = this.renderer.player.camera_rot_y + difference_y*0.01F;
+							}
+						}
+		            }
+		        }
+		        break;
+		    case MotionEvent.ACTION_UP:
+		    case MotionEvent.ACTION_POINTER_UP:
+		        eventDataMap.remove(Integer.valueOf(pointerId));
+		        break;
+		    case MotionEvent.ACTION_OUTSIDE:
+		        break;
+		    }
+		   return true;
 	}
 	
 	public void touchUpdate() {
 		if(System.currentTimeMillis()-this.touch_update_timer>25 && ClassicByteView.current_screen==null) {
-        	for(int k=0;k!=ClassicByteView.pointers.size();k++) {
-        		if(k>=ClassicByteView.pointers.size()) {
-        			break;
-        		}
-        		Point p = ClassicByteView.pointers.get(k);
-        		if(p!=null && !p.disabled) {
-		        	float start_x = p.start_x;
-		        	//float start_y = p.start_y;
-		        	if(!IngameRenderer.isPaused) {
-			        	if(start_x<this.renderer.width/2.0F && IngameRenderer.current_button==0 && Math.sqrt((p.x-p.start_x)*(p.x-p.start_x)+(p.y-p.start_y)*(p.y-p.start_y))>Options.pointer_size) {
-			        		
-			        		this.movement_pointer_center_x = (int)(p.start_x);
-			        		this.movement_pointer_center_y = (int)(p.start_y);
-			        		
-			        		float a = 0.0F;
-			        		
-			        		if(p.x>this.movement_pointer_center_x+30 && p.y>this.movement_pointer_center_y-30 && p.y<this.movement_pointer_center_y+30) {
-			        			// pure movement to the right
-			        			a = 90.0F;
-			        		}
-
-			        		if(p.x<this.movement_pointer_center_x-30 && p.y>this.movement_pointer_center_y-30 && p.y<this.movement_pointer_center_y+30) {
-			        			// pure movement to the left
-			        			a = -90.0F;
-			        		}
-			        		
-			        		if(p.x>this.movement_pointer_center_x-30 && p.x<this.movement_pointer_center_x+30 && p.y<this.movement_pointer_center_y-30) {
-			        			// pure movement to the top
-			        			a = 0.0F;
-			        		}
-			        		
-			        		if(p.x>this.movement_pointer_center_x-30 && p.x<this.movement_pointer_center_x+30 && p.y>this.movement_pointer_center_y+30) {
-			        			// pure movement to the bottom
-			        			a = 180.0F;
-			        		}
-			        		
-			        		if(p.x<this.movement_pointer_center_x-30 && p.y<this.movement_pointer_center_y-30) {
-			        			// movement to the left upper part
-			        			a = -45.0F;
-			        		}
-			        		
-			        		if(p.x>this.movement_pointer_center_x+30 && p.y<this.movement_pointer_center_y-30) {
-			        			// movement to the right upper part
-			        			a = 45.0F;
-			        		}
-			        		
-			        		if(p.x<this.movement_pointer_center_x-30 && p.y>this.movement_pointer_center_y+30) {
-			        			// movement to the left lower part
-			        			a = -135.0F;
-			        		}
-			        		
-			        		if(p.x>this.movement_pointer_center_x+30 && p.y>this.movement_pointer_center_y+30) {
-			        			// movement to the right lower part
-			        			a = 135.0F;
-			        		}
-			        		
-			        		a = (float)(a/360.0F*(Math.PI*2));
-			        		
-			        		float x = (float)(this.renderer.player.getXPosition()+0.1F*Math.cos(this.renderer.player.camera_rot_x+a) + 0.1F*Math.sin(this.renderer.player.camera_rot_x+a));
-			    			float z = (float)(this.renderer.player.getZPosition()+0.1F*Math.sin(this.renderer.player.camera_rot_x+a) - 0.1F*Math.cos(this.renderer.player.camera_rot_x+a));
-			    			
-			    			if(Block.canGoTrough(this.renderer.world.getBlock((int)x, (int)this.renderer.player.getYPosition()+1, (int)z)) && Block.canGoTrough(this.renderer.world.getBlock((int)x, (int)this.renderer.player.getYPosition()+2, (int)z))) {
-				    			this.renderer.player.setPosition(x, this.renderer.player.getYPosition(), z);
-			    			}
-			        	}
-			        	
-			        	/*if(IngameRenderer.current_button==0 && start_x>this.renderer.width/2.0F) {
-			        		float difference_x = p.x-p.last_x;
-			        		float difference_y = p.y-p.last_y;
-			        		this.renderer.player.camera_rot_x = this.renderer.player.camera_rot_x + difference_x;
-		        			this.renderer.player.camera_rot_y = this.renderer.player.camera_rot_y + difference_y;
-			        	}*/
-			        	
-			        	/*if(start_x>this.renderer.width/2.0F && Math.sqrt((p.x-p.start_x)*(p.x-p.start_x)+(p.y-p.start_y)*(p.y-p.start_y))>Options.pointer_size && IngameRenderer.current_button==0) {
-			        		this.look_pointer_center_x = (int)(p.start_x);
-			        		this.look_pointer_center_y = (int)(p.start_y);
-			        		
-			        		if(p.x>this.look_pointer_center_x+30 && p.y>this.look_pointer_center_y-30 && p.y<this.look_pointer_center_y+30) {
-			        			// pure movement to the right
-			        			this.renderer.player.camera_rot_x = this.renderer.player.camera_rot_x + 0.02F;
-			        		}
-
-			        		if(p.x<this.look_pointer_center_x-30 && p.y>this.look_pointer_center_y-30 && p.y<this.look_pointer_center_y+30) {
-			        			// pure movement to the left
-			        			this.renderer.player.camera_rot_x = this.renderer.player.camera_rot_x - 0.02F;
-			        		}
-			        		
-			        		if(p.x>this.look_pointer_center_x-30 && p.x<this.look_pointer_center_x+30 && p.y<this.look_pointer_center_y-30) {
-			        			// pure movement to the top
-			        			this.renderer.player.camera_rot_y = this.renderer.player.camera_rot_y - 0.02F;
-			        		}
-			        		
-			        		if(p.x>this.look_pointer_center_x-30 && p.x<this.look_pointer_center_x+30 && p.y>this.look_pointer_center_y+30) {
-			        			// pure movement to the bottom
-			        			this.renderer.player.camera_rot_y = this.renderer.player.camera_rot_y + 0.02F;
-			        		}
-			        		
-			        		if(p.x<this.look_pointer_center_x-30 && p.y<this.look_pointer_center_y-30) {
-			        			// movement to the left upper part
-			        			this.renderer.player.camera_rot_x = this.renderer.player.camera_rot_x - 0.02F;
-			        			this.renderer.player.camera_rot_y = this.renderer.player.camera_rot_y - 0.02F;
-			        		}
-			        		
-			        		if(p.x>this.look_pointer_center_x+30 && p.y<this.look_pointer_center_y-30) {
-			        			// movement to the right upper part
-			        			this.renderer.player.camera_rot_x = this.renderer.player.camera_rot_x + 0.02F;
-			        			this.renderer.player.camera_rot_y = this.renderer.player.camera_rot_y - 0.02F;
-			        		}
-			        		
-			        		if(p.x<this.look_pointer_center_x-30 && p.y>this.look_pointer_center_y+30) {
-			        			// movement to the left lower part
-			        			this.renderer.player.camera_rot_x = this.renderer.player.camera_rot_x - 0.02F;
-			        			this.renderer.player.camera_rot_y = this.renderer.player.camera_rot_y + 0.02F;
-			        		}
-			        		
-			        		if(p.x>this.look_pointer_center_x+30 && p.y>this.look_pointer_center_y+30) {
-			        			// movement to the right lower part
-			        			this.renderer.player.camera_rot_x = this.renderer.player.camera_rot_x + 0.02F;
-			        			this.renderer.player.camera_rot_y = this.renderer.player.camera_rot_y + 0.02F;
-			        		}
-			        	}*/
-		        	}
-        		}
-        	}
-        	this.touch_update_timer = System.currentTimeMillis();
-        }
+			boolean any_pointer_on_joystick = false;
+			for(EventData event : this.eventDataMap.values()) {
+				if(!IngameRenderer.isPaused && event.x_start<this.renderer.height/2.0F && event.x_start<this.renderer.height/2.0F && event.y_start>this.renderer.height-this.renderer.height/2.0F && event.y_start>this.renderer.height-this.renderer.height/2.0F) {
+					IngameRenderer.joystick_x = -0.5F+(event.x/(this.renderer.height/2.0F));
+					IngameRenderer.joystick_y = -0.5F+(1.0F-(((this.renderer.height-event.y)/(this.renderer.height/2.0F))));
+					if(IngameRenderer.joystick_x>0.5F) {
+						IngameRenderer.joystick_x = IngameRenderer.joystick_x-Math.abs(IngameRenderer.joystick_x-0.5F);
+					}
+					if(IngameRenderer.joystick_x<-0.5F) {
+						IngameRenderer.joystick_x = IngameRenderer.joystick_x+Math.abs(IngameRenderer.joystick_x+0.5F);
+					}
+					if(IngameRenderer.joystick_y>0.5F) {
+						IngameRenderer.joystick_y = IngameRenderer.joystick_y-Math.abs(IngameRenderer.joystick_y-0.5F);
+					}
+					if(IngameRenderer.joystick_y<-0.5F) {
+						IngameRenderer.joystick_y = IngameRenderer.joystick_y+Math.abs(IngameRenderer.joystick_y+0.5F);
+					}
+					float b = (Math.abs(IngameRenderer.joystick_x)+Math.abs(IngameRenderer.joystick_y))*2;
+					float a = (float) (Math.PI*2.0F-Math.atan2(IngameRenderer.joystick_x, IngameRenderer.joystick_y)+Math.PI);
+					if(b<0.25F) {
+						b = 0.0F;
+					}
+					float x = (float)(this.renderer.player.getXPosition()+0.1F*b*Math.cos(this.renderer.player.camera_rot_x+a) + 0.1F*b*Math.sin(this.renderer.player.camera_rot_x+a));
+					float z = (float)(this.renderer.player.getZPosition()+0.1F*b*Math.sin(this.renderer.player.camera_rot_x+a) - 0.1F*b*Math.cos(this.renderer.player.camera_rot_x+a));
+					if(Block.canGoTrough(this.renderer.world.getBlock((int)x, (int)this.renderer.player.getYPosition()+2, (int)z))) {
+						if(!Block.canGoTrough(this.renderer.world.getBlock((int)x, (int)this.renderer.player.getYPosition(), (int)z)) && !Block.canGoTrough(this.renderer.world.getBlock((int)x, (int)this.renderer.player.getYPosition()+1, (int)z))) {
+							this.renderer.player.setPosition(x, this.renderer.player.getYPosition()+1, z);
+						} else {
+							this.renderer.player.setPosition(x, this.renderer.player.getYPosition(), z);
+						}
+					}
+					any_pointer_on_joystick = true;
+				}
+			}
+			if(!any_pointer_on_joystick) {
+				IngameRenderer.joystick_x = 0.0F;
+				IngameRenderer.joystick_y = 0.0F;
+			}
+			this.touch_update_timer = System.currentTimeMillis();
+		}
 	}
 
-	@Override
 	public void run() {
 		long physics_update_timer = System.currentTimeMillis();
 		long chunk_update_timer = System.currentTimeMillis();
 		while(true) {
-	        this.renderer.networkManager.run();
 	        this.renderer.player.run();
-	        this.touchUpdate();
+	        try { this.renderer.networkManager.update(); } catch(Exception e) { e.printStackTrace(); };
+	        try { this.touchUpdate(); } catch(Exception e) {};
 	        
 	        if(this.renderer.player.camera_rot_y<0.0F) {
 	        	this.renderer.player.camera_rot_y = 0.0F;
@@ -343,6 +318,7 @@ public class ClassicByteView extends GLSurfaceView implements Runnable {
 	        	if(Block.canGoTrough(this.renderer.world.getBlock((int)this.renderer.player.getXPosition(),(int)(this.renderer.player.getYPosition()),(int)this.renderer.player.getZPosition()))) {
 	        		this.renderer.player.setPosition(this.renderer.player.getXPosition(), this.renderer.player.getYPosition()-0.0981F, this.renderer.player.getZPosition());
 	        	}
+	        	this.renderer.cloud_offset = ((float)(System.currentTimeMillis()%600000))/600000.0F;
 	        	physics_update_timer = System.currentTimeMillis();
 	        }
 		}

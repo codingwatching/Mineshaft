@@ -1,5 +1,5 @@
 /*
-Ace of Spades remake
+Mineshaft
 Copyright (C) 2014 ByteBit
 
 This program is free software; you can redistribute it and/or modify it under the terms of
@@ -28,6 +28,10 @@ public class World {
 	private int sky_color_red = -1;
 	private int sky_color_green = -1;
 	private int sky_color_blue = -1;
+	private int cloud_color_red = -1;
+	private int cloud_color_green = -1;
+	private int cloud_color_blue = 1;
+	private int side_level = 32;
 	public Random rand = new Random();
 	
 	public RenderChunk[][] renderchunks = new RenderChunk[(int)(this.x_size/16.0F+0.5F)][(int)(this.z_size/16.0F+0.5F)];
@@ -48,23 +52,19 @@ public class World {
 	}
 	
 	public void setBlock(int x, int y, int z, int block_type) {
-		if(x>-1 && x<x_size && y>-1 && y<y_size && z>-1 && z<z_size) {
-			this.block_array[(y*z_size+z)*x_size+x] = (byte)block_type;
-			for(int z2=0;z2!=(int)(this.z_size/16.0F+0.5F);z2++) {
-				for(int x2=0;x2!=(int)(this.x_size/16.0F+0.5F);x2++) {
-					if(this.renderchunks[x2][z2]!=null && x>=x2*16 && x<(x2+1)*16 && z>=z2*16 && z<(z2+1)*16) {
-						ClassicByte.view.renderer.force_chunk_update_x = x2;
-						ClassicByte.view.renderer.force_chunk_update_z = z2;
-						ClassicByte.view.renderer.force_chunk_update = true;
-					}
-				}
-			}
+		Logger.log(this, "Set block("+Block.getName(block_type)+") at "+x+"-"+y+"-"+z);
+		if(x>-1 && x<this.x_size && y>-1 && y<this.y_size && z>-1 && z<this.z_size) {
+			this.block_array[(y*this.z_size+z)*this.x_size+x] = (byte)block_type;
+			ClassicByte.view.renderer.force_chunk_update_x = (int) (x/(float)RenderChunk.CHUNK_LENGTH_OF_BORDER);
+			ClassicByte.view.renderer.force_chunk_update_z = (int) (z/(float)RenderChunk.CHUNK_LENGTH_OF_BORDER);
+			ClassicByte.view.renderer.force_chunk_update = true;
 		}
 	}
 	
 	public boolean canBlockSeeTheSky(int x, int y, int z) {
+		int a;
 		for(int k=y+1;k!=this.y_size;k++) {
-			if(!Block.isTranslucent(this.getBlock(x, k, z))) {
+			if(!this.isAir(x, k, z)) {
 				return false;
 			}
 		}
@@ -75,7 +75,11 @@ public class World {
 		if(x>-1 && x<x_size && y>-1 && y<y_size && z>-1 && z<z_size) {
 			return block_array[(y*z_size+z)*x_size+x];
 		} else {
-			return 0;
+			if(y<y_size) {
+				return Block.BLOCK_UNDEFINIED;
+			} else {
+				return Block.BLOCK_AIR;
+			}
 		}
 	}
 	
@@ -146,6 +150,12 @@ public class World {
 		this.sky_color_blue = blue;
 	}
 	
+	public void setCloudColor(int red, int green, int blue) {
+		this.cloud_color_red = red;
+		this.cloud_color_green = green;
+		this.cloud_color_blue = blue;
+	}
+	
 	public int getSkyColorRedValue() {
 		return this.sky_color_red;
 	}
@@ -156,5 +166,25 @@ public class World {
 	
 	public int getSkyColorBlueValue() {
 		return this.sky_color_blue;
+	}
+	
+	public int getCloudColorRedValue() {
+		return this.cloud_color_red;
+	}
+	
+	public int getCloudColorGreenValue() {
+		return this.cloud_color_green;
+	}
+	
+	public int getCloudColorBlueValue() {
+		return this.cloud_color_blue;
+	}
+	
+	public void setSideLevel(int side_level) {
+		this.side_level = side_level;
+	}
+	
+	public int getSideLevel() {
+		return this.side_level;
 	}
 }

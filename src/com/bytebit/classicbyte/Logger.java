@@ -1,5 +1,5 @@
 /*
-Ace of Spades remake
+Mineshaft
 Copyright (C) 2014 ByteBit
 
 This program is free software; you can redistribute it and/or modify it under the terms of
@@ -15,18 +15,44 @@ if not, see <http://www.gnu.org/licenses/>.
 */
 
 
+
 package com.bytebit.classicbyte;
 
-public class Logger {
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import android.content.Intent;
+import android.os.Build;
+
+public class Logger implements Thread.UncaughtExceptionHandler {
 	
+	private static Logger exception_handler = new Logger();
 	public static boolean enabled = true;
+	private static PrintWriter log_file_out = null;
+	private static boolean init = false;
+	
+	public static Logger getExceptionHandler() {
+		return exception_handler;
+	}
 	
 	public static void log(Object c, String message) {
+		/*if(init && Logger.enabled) {
+			File f = new File(Environment.getExternalStorageDirectory().toString()+"/classicbytelog2.txt");
+			MediaFile m = new MediaFile(ClassicByte.view.getContext().getContentResolver(),f);
+			System.err.println(f.toString());
+			try {
+				m.delete();
+				log_file_out = new PrintWriter(m.write());
+			} catch(Exception e) { System.err.println(e.getMessage()); }
+			init = false;
+		}*/
 		if(Logger.enabled && c!=null) {
+			//log_file_out.println("["+c.getClass().getName()+"] "+message);
 			System.err.println("["+c.getClass().getName()+"] "+message);
 		}
 		if(Logger.enabled && c==null) {
-			System.err.println("[location unknown] "+message);
+			//log_file_out.println("[unknown location] "+message);
+			System.err.println("[unknown location] "+message);
 		}
 	}
 	
@@ -52,5 +78,48 @@ public class Logger {
 	
 	public static void log(Object c, double x) {
 		Logger.log(c, ""+x);
+	}
+
+	public void uncaughtException(Thread thread, Throwable ex) {
+		String LINE_SEPARATOR = "\n";
+		StringWriter stackTrace = new StringWriter();
+        ex.printStackTrace(new PrintWriter(stackTrace));
+        StringBuilder errorReport = new StringBuilder();
+        errorReport.append("************ START OF CRASH REPORT ************\n\n");
+        errorReport.append(stackTrace.toString());
+
+        errorReport.append("\n\n************ DEVICE INFORMATION ***********\n");
+        errorReport.append("Brand: ");
+        errorReport.append(Build.BRAND);
+        errorReport.append(LINE_SEPARATOR);
+        errorReport.append("Device: ");
+        errorReport.append(Build.DEVICE);
+        errorReport.append(LINE_SEPARATOR);
+        errorReport.append("Model: ");
+        errorReport.append(Build.MODEL);
+        errorReport.append(LINE_SEPARATOR);
+        errorReport.append("Id: ");
+        errorReport.append(Build.ID);
+        errorReport.append(LINE_SEPARATOR);
+        errorReport.append("Product: ");
+        errorReport.append(Build.PRODUCT);
+        errorReport.append(LINE_SEPARATOR);
+        errorReport.append("\n\n************ FIRMWARE ************\n");
+        errorReport.append("SDK: ");
+        errorReport.append(Build.VERSION.SDK);
+        errorReport.append(LINE_SEPARATOR);
+        errorReport.append("Release: ");
+        errorReport.append(Build.VERSION.RELEASE);
+        errorReport.append(LINE_SEPARATOR);
+        errorReport.append("Incremental: ");
+        errorReport.append(Build.VERSION.INCREMENTAL);
+        errorReport.append(LINE_SEPARATOR);
+
+        Intent intent = new Intent(ClassicByte.view.getContext(), AnotherActivity.class);
+        intent.putExtra("error", errorReport.toString());
+        ClassicByte.view.getContext().startActivity(intent);
+
+        android.os.Process.killProcess(android.os.Process.myPid());
+        System.exit(10);
 	}
 }

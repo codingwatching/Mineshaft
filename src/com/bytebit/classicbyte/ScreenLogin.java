@@ -1,5 +1,5 @@
 /*
-Ace of Spades remake
+Mineshaft
 Copyright (C) 2014 ByteBit
 
 This program is free software; you can redistribute it and/or modify it under the terms of
@@ -13,6 +13,7 @@ See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with this program;
 if not, see <http://www.gnu.org/licenses/>.
 */
+
 
 
 package com.bytebit.classicbyte;
@@ -80,7 +81,7 @@ public class ScreenLogin extends Screen {
 		}
 		c.drawText("Password: "+password, (this.parent.renderer.width-TextureManager.getBitmap(10).getWidth())/2+this.parent.renderer.width*0.02F, this.parent.renderer.width*0.08F+this.parent.renderer.width*0.18F+TextureManager.getBitmap(13).getHeight()*1.1F, this.parent.standard_paint);
 		this.parent.standard_paint.setColor(Color.RED);
-		c.drawText("ANDROID PRE-RELEASE 0.0.1 BY BYTEBIT",0,this.parent.renderer.width*0.04F,this.parent.standard_paint);
+		//c.drawText("ANDROID PRE-RELEASE 0.0.2 BY BYTEBIT "+(Runtime.getRuntime().maxMemory()/1024/1024)+"MB available",0,this.parent.renderer.width*0.04F,this.parent.standard_paint);
 		this.parent.standard_paint.setColor(Color.WHITE);
 		if(this.current_button==1) {
 			c.drawBitmap(TextureManager.getBitmap(16), (this.parent.renderer.width-TextureManager.getBitmap(13).getWidth())/2, this.parent.renderer.width*0.02F+this.parent.renderer.width*0.18F+TextureManager.getBitmap(13).getHeight()*2.2F, this.parent.standard_paint);
@@ -127,7 +128,7 @@ public class ScreenLogin extends Screen {
 						((ClassicByte)ClassicByte.view.getContext()).openAlert("Tutorial", "You're now seeing the serverlist in the background. To join a server just touch it and wait for the map to load! On the upper right corner are important buttons. That one with the computer is for the serverlist, the other one's for game options. We wish you fun while playing!", true, "just_close");
 						edit.putString("notfirstrun", "true");
 					} else {
-						((ClassicByte)ClassicByte.view.getContext()).openAlert("", "Brought to you by ByteBit", true, "just_close");
+						//((ClassicByte)ClassicByte.view.getContext()).openAlert("", "Brought to you by ByteBit", true, "just_close");
 					}
 					edit.commit();
 				}

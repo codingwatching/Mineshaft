@@ -1,5 +1,5 @@
 /*
-Ace of Spades remake
+Mineshaft
 Copyright (C) 2014 ByteBit
 
 This program is free software; you can redistribute it and/or modify it under the terms of
@@ -14,20 +14,20 @@ You should have received a copy of the GNU General Public License along with thi
 if not, see <http://www.gnu.org/licenses/>.
 */
 
-
 package com.bytebit.classicbyte;
 
 import java.util.ArrayList;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+import javax.microedition.khronos.opengles.GL11;
 
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.PorterDuff.Mode;
 import android.opengl.GLES10;
 import android.opengl.GLSurfaceView;
@@ -39,8 +39,6 @@ public class ClassicByteRenderer implements GLSurfaceView.Renderer {
 	
 	public Player player = new Player();
 	public World world = new World();
-	
-	public Context context;
 	
 	public ClassicByteView parent;
 	
@@ -55,9 +53,7 @@ public class ClassicByteRenderer implements GLSurfaceView.Renderer {
 	public int force_chunk_update_x = -1;
 	public int force_chunk_update_z = -1;
 	
-	public void setContext(Context c) {
-		this.context = c;
-	}
+	public float cloud_offset = 0.0F;
 	
 	public void setView(ClassicByteView v) {
 		this.parent = v;
@@ -65,12 +61,13 @@ public class ClassicByteRenderer implements GLSurfaceView.Renderer {
 	
 	public void onDrawFrame(GL10 gl) {
 		long time = System.currentTimeMillis();
+		GLES10.glClearColor((float)this.world.getSkyColorRedValue()/255.0F, (float)this.world.getSkyColorGreenValue()/255.0F, (float)this.world.getSkyColorBlueValue()/255.0F, 1.0F);
 		GLES10.glClear(GLES10.GL_DEPTH_BUFFER_BIT | GLES10.GL_COLOR_BUFFER_BIT);
 		
 		if(ClassicByteView.current_screen==null) {
 			GLES10.glMatrixMode(GLES10.GL_PROJECTION);
 			GLES10.glLoadIdentity();
-			GLU.gluPerspective(gl, 70.0F, (float) this.width / (float) this.height,0.1F,64.0F);
+			GLU.gluPerspective(gl, 70.0F, (float) this.width / (float) this.height,0.1F,256.0F);
 			float eye_pos_x = (float)(this.player.getXPosition()+100*Math.cos(this.player.camera_rot_x) + 100*Math.sin(this.player.camera_rot_x));
 			float eye_pos_y = (float)(this.player.getPlayerEyeHeight()+this.player.getYPosition()+100*Math.PI*Math.cos(this.player.camera_rot_y));
 			float eye_pos_z = (float)(this.player.getZPosition()+100*Math.sin(this.player.camera_rot_x) - 100*Math.cos(this.player.camera_rot_x));
@@ -88,6 +85,7 @@ public class ClassicByteRenderer implements GLSurfaceView.Renderer {
 			if(this.force_chunk_update && this.force_chunk_update_x==-1 && this.force_chunk_update_z==-1) {
 				ChunkListUpdater.disable_building = true;
 				
+				ClassicByte.information_c = null;
 				Runnable f = new Runnable() {
 		            public void run() {
 		            	ProgressDialog progress = new ProgressDialog(ClassicByte.view.getContext());
@@ -97,17 +95,27 @@ public class ClassicByteRenderer implements GLSurfaceView.Renderer {
 						int a = (int)(ClassicByte.view.renderer.world.z_size/RenderChunk.CHUNK_LENGTH_OF_BORDER+0.5F);
 						int b = (int)(ClassicByte.view.renderer.world.x_size/RenderChunk.CHUNK_LENGTH_OF_BORDER+0.5F);
 						progress.setMax(a*b);
+						if(a*b>64) {
+							progress.setMessage("Generating chunks..."+(char)13+(char)10+"The map you're loading seems to be quite big. It may take a measurable amount of time, therefore please be patient.");
+						}
 						progress.show();
 						ClassicByte.information_c = progress;
 		            }
 		        };
 				((ClassicByte)ClassicByte.view.getContext()).runOnUiThread(f);
 				
+				while(ClassicByte.information_c==null) {}
+				
 				int a = (int)(ClassicByte.view.renderer.world.z_size/t+0.5F);
 				int b = (int)(ClassicByte.view.renderer.world.x_size/t+0.5F);
 				
 				for(int z2=0;z2!=a;z2++) {
 					for(int x2=0;x2!=b;x2++) {
+						if(this.world.renderchunks[x2][z2]==null) {
+							this.world.renderchunks[x2][z2] = new RenderChunk(this.world);
+							this.world.renderchunks[x2][z2].setRange(x2, z2);
+							this.world.renderchunks[x2][z2].init();
+						}
 						if(this.world.renderchunks[x2][z2]!=null) {
 							this.world.renderchunks[x2][z2].buildVBO();
 						}
@@ -133,6 +141,9 @@ public class ClassicByteRenderer implements GLSurfaceView.Renderer {
 			
 			GLES10.glPushMatrix();
 			GLES10.glScalef(0.5F,0.5F,0.5F);
+			GLES10.glEnableClientState(GLES10.GL_VERTEX_ARRAY);
+			GLES10.glEnableClientState(GLES10.GL_TEXTURE_COORD_ARRAY);
+			ChunkListUpdater.disable_building = true;
 			if(!Options.fancy_graphics) {
 				GLES10.glDisable(GLES10.GL_BLEND);
 				for(int k=0;k!=ChunkListUpdater.chunks_to_render_size;k++) {
@@ -148,9 +159,187 @@ public class ClassicByteRenderer implements GLSurfaceView.Renderer {
 					}
 				}
 			}
+			ChunkListUpdater.disable_building = false;
+			GLES10.glDisableClientState(GLES10.GL_VERTEX_ARRAY);
+			GLES10.glDisableClientState(GLES10.GL_TEXTURE_COORD_ARRAY);
 			GLES10.glPopMatrix();
 			
+			TextureManager.bindTexture(38);
+			GLES10.glColor4f((float)this.world.getCloudColorRedValue()/255.0F,(float)this.world.getCloudColorGreenValue()/255.0F,(float)this.world.getCloudColorBlueValue()/255.0F,1.0F);
+			Tesselator.INSTANCE.glBegin(GL11.GL_TRIANGLE_FAN);
+			float x_repeat = (this.world.x_size+1024.0F)/2560.0F;
+			float z_repeat = (this.world.z_size+1024.0F)/2560.0F;
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,this.cloud_offset);
+			Tesselator.INSTANCE.glVertex3f(-512.0F, this.world.y_size+4.0F, -512.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,this.cloud_offset);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size+512.0F, this.world.y_size+4.0F, -512.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,z_repeat+this.cloud_offset);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size+512.0F, this.world.y_size+4.0F, this.world.z_size+512.0F);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,z_repeat+this.cloud_offset);
+			Tesselator.INSTANCE.glVertex3f(-512.0F, this.world.y_size+4.0F, this.world.z_size+512.0F);
+			Tesselator.INSTANCE.glEnd();
+			GLES10.glColor4f(1.0F,1.0F,1.0F,1.0F);
 			
+			//Draw the bedrock around the terrain
+			TextureManager.bindTexture(39);
+			Tesselator.INSTANCE.glBegin(GL11.GL_TRIANGLE_FAN);
+			x_repeat = this.world.x_size;
+			z_repeat = this.world.z_size;
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,0.0F);
+			Tesselator.INSTANCE.glVertex3f(0.0F, 0.0F, 0.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,0.0F);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size, 0.0F, 0.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size, 0.0F, this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(0.0F, 0.0F, this.world.z_size);
+			Tesselator.INSTANCE.glEnd();
+			Tesselator.INSTANCE.glBegin(GL11.GL_TRIANGLE_FAN);
+			x_repeat = this.world.x_size;
+			z_repeat = this.world.getSideLevel()-2.0F;
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,0.0F);
+			Tesselator.INSTANCE.glVertex3f(0.0F, 0.0F, 0.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,0.0F);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size, 0.0F, 0.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size, this.world.getSideLevel()-2.0F, 0.0F);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(0.0F, this.world.getSideLevel()-2.0F, 0.0F);
+			Tesselator.INSTANCE.glEnd();
+			Tesselator.INSTANCE.glBegin(GL11.GL_TRIANGLE_FAN);
+			x_repeat = this.world.x_size;
+			z_repeat = this.world.getSideLevel()-2.0F;
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,0.0F);
+			Tesselator.INSTANCE.glVertex3f(0.0F, 0.0F, this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,0.0F);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size, 0.0F, this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size, this.world.getSideLevel()-2.0F, this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(0.0F, this.world.getSideLevel()-2.0F, this.world.z_size);
+			Tesselator.INSTANCE.glEnd();
+			Tesselator.INSTANCE.glBegin(GL11.GL_TRIANGLE_FAN);
+			x_repeat = this.world.z_size;
+			z_repeat = this.world.getSideLevel()-2.0F;
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,0.0F);
+			Tesselator.INSTANCE.glVertex3f(0.0F, 0.0F, 0.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,0.0F);
+			Tesselator.INSTANCE.glVertex3f(0.0F, 0.0F, this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(0.0F, this.world.getSideLevel()-2.0F, this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(0.0F, this.world.getSideLevel()-2.0F, 0.0F);
+			Tesselator.INSTANCE.glEnd();
+			Tesselator.INSTANCE.glBegin(GL11.GL_TRIANGLE_FAN);
+			x_repeat = this.world.z_size;
+			z_repeat = this.world.getSideLevel()-2.0F;
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,0.0F);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size, 0.0F, 0.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,0.0F);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size, 0.0F, this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size, this.world.getSideLevel()-2.0F, this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size, this.world.getSideLevel()-2.0F, 0.0F);
+			Tesselator.INSTANCE.glEnd();
+			
+			//Now draw the bedrock below the water 
+			TextureManager.bindTexture(39);
+			Tesselator.INSTANCE.glBegin(GL11.GL_TRIANGLE_FAN);
+			x_repeat = 512.0F;
+			z_repeat = this.world.x_size+1024.0F;
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,0.0F);
+			Tesselator.INSTANCE.glVertex3f(-512.0F, this.world.getSideLevel()-2.0F, -512.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,0.0F);
+			Tesselator.INSTANCE.glVertex3f(-512.0F, this.world.getSideLevel()-2.0F, 0.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size+512.0F, this.world.getSideLevel()-2.0F, 0.0F);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size+512.0F, this.world.getSideLevel()-2.0F,-512.0F);
+			Tesselator.INSTANCE.glEnd();
+			Tesselator.INSTANCE.glBegin(GL11.GL_TRIANGLE_FAN);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,0.0F);
+			Tesselator.INSTANCE.glVertex3f(-512.0F, this.world.getSideLevel()-2.0F, this.world.z_size+512.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,0.0F);
+			Tesselator.INSTANCE.glVertex3f(-512.0F, this.world.getSideLevel()-2.0F, this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size+512.0F, this.world.getSideLevel()-2.0F, this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size+512.0F, this.world.getSideLevel()-2.0F,this.world.z_size+512.0F);
+			Tesselator.INSTANCE.glEnd();
+			
+			x_repeat = this.world.z_size;
+			z_repeat = 512.0F;
+			Tesselator.INSTANCE.glBegin(GL11.GL_TRIANGLE_FAN);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,0.0F);
+			Tesselator.INSTANCE.glVertex3f(0.0F, this.world.getSideLevel()-2.0F, 0.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,0.0F);
+			Tesselator.INSTANCE.glVertex3f(0.0F, this.world.getSideLevel()-2.0F, this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(-512.0F, this.world.getSideLevel()-2.0F, this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(-512.0F, this.world.getSideLevel()-2.0F,0.0F);
+			Tesselator.INSTANCE.glEnd();
+			
+			Tesselator.INSTANCE.glBegin(GL11.GL_TRIANGLE_FAN);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,0.0F);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size, this.world.getSideLevel()-2.0F, 0.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,0.0F);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size, this.world.getSideLevel()-2.0F, this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size+512.0F, this.world.getSideLevel()-2.0F, this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size+512.0F, this.world.getSideLevel()-2.0F,0.0F);
+			Tesselator.INSTANCE.glEnd();
+			
+			//Now draw the water around the terrain
+			TextureManager.bindTexture(40);
+			Tesselator.INSTANCE.glBegin(GL11.GL_TRIANGLE_FAN);
+			x_repeat = 512.0F;
+			z_repeat = this.world.x_size+1024.0F;
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,0.0F);
+			Tesselator.INSTANCE.glVertex3f(-512.0F, this.world.getSideLevel(), -512.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,0.0F);
+			Tesselator.INSTANCE.glVertex3f(-512.0F, this.world.getSideLevel(), 0.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size+512.0F, this.world.getSideLevel(), 0.0F);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size+512.0F, this.world.getSideLevel(),-512.0F);
+			Tesselator.INSTANCE.glEnd();
+			Tesselator.INSTANCE.glBegin(GL11.GL_TRIANGLE_FAN);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,0.0F);
+			Tesselator.INSTANCE.glVertex3f(-512.0F, this.world.getSideLevel(), this.world.z_size+512.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,0.0F);
+			Tesselator.INSTANCE.glVertex3f(-512.0F, this.world.getSideLevel(), this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size+512.0F, this.world.getSideLevel(), this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size+512.0F, this.world.getSideLevel(),this.world.z_size+512.0F);
+			Tesselator.INSTANCE.glEnd();
+			
+			x_repeat = this.world.z_size;
+			z_repeat = 512.0F;
+			Tesselator.INSTANCE.glBegin(GL11.GL_TRIANGLE_FAN);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,0.0F);
+			Tesselator.INSTANCE.glVertex3f(0.0F, this.world.getSideLevel(), 0.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,0.0F);
+			Tesselator.INSTANCE.glVertex3f(0.0F, this.world.getSideLevel(), this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(-512.0F, this.world.getSideLevel(), this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(-512.0F, this.world.getSideLevel(),0.0F);
+			Tesselator.INSTANCE.glEnd();
+			
+			Tesselator.INSTANCE.glBegin(GL11.GL_TRIANGLE_FAN);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,0.0F);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size, this.world.getSideLevel(), 0.0F);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,0.0F);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size, this.world.getSideLevel(), this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(x_repeat,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size+512.0F, this.world.getSideLevel(), this.world.z_size);
+			Tesselator.INSTANCE.glTexCoord2f(0.0F,z_repeat);
+			Tesselator.INSTANCE.glVertex3f(this.world.x_size+512.0F, this.world.getSideLevel(),0.0F);
+			Tesselator.INSTANCE.glEnd();
 			
 			for(int k=0;k!=this.players.size();k++) {
 				if(k>=this.players.size()) {
@@ -188,7 +377,7 @@ public class ClassicByteRenderer implements GLSurfaceView.Renderer {
 			ClassicByteView.current_screen.parent = this.parent;
 			ClassicByteView.current_screen.draw(c);
 		} else {
-			IngameRenderer.render2D(c);
+			//IngameRenderer.render2D(c);
 		}
 			    
 			    
@@ -198,7 +387,11 @@ public class ClassicByteRenderer implements GLSurfaceView.Renderer {
 		}
 		f.drawBitmap(TextureManager.getBitmap(0), 0, 0, ClassicByte.view.standard_paint);
 		
-		TextureManager.bindTexture(20);
+		if(ClassicByteView.current_screen!=null) {
+			TextureManager.bindTexture(20);
+		} else {
+			//Logger.log(this, IngameRenderer.CHAT_STATUS_1);
+		}
 			    
 		GLES10.glMatrixMode(GLES10.GL_PROJECTION);
 		GLES10.glLoadIdentity();
@@ -214,13 +407,108 @@ public class ClassicByteRenderer implements GLSurfaceView.Renderer {
 		GLES10.glEnableClientState(GLES10.GL_TEXTURE_COORD_ARRAY);
 		GLES10.glVertexPointer(2, GLES10.GL_SHORT, 0, TextureManager.screen_overlay_vertex_buffer);
 		GLES10.glTexCoordPointer(2, GLES10.GL_FLOAT, 0, TextureManager.screen_overlay_texture_coords_buffer);
-		GLES10.glDrawArrays(GLES10.GL_TRIANGLE_STRIP, 0, 4);
+		if(ClassicByteView.current_screen!=null) {
+			GLES10.glDrawArrays(GLES10.GL_TRIANGLE_STRIP, 0, 4);
+		} else {
+			int a = this.world.getBlock((int)this.player.getXPosition(),(int)this.player.getYPosition()+2,(int)this.player.getZPosition());
+			if(a==Block.BLOCK_WATER || a==Block.BLOCK_WATER_STATIC) {
+				TextureManager.bindTexture(40);
+				drawRect(this.player.camera_rot_x*this.width*0.1F-this.width*0.7F,this.player.camera_rot_y*this.width*0.1F-this.width*0.4F,this.width*1.8F,this.width*1.8F);
+			}
+			IngameRenderer.render2D(c);
+		}
 		
 		IngameRenderer.render2DSecondPass();
-				
+		GLES10.glDisableClientState(GLES10.GL_VERTEX_ARRAY);
+		GLES10.glDisableClientState(GLES10.GL_TEXTURE_COORD_ARRAY);
+		
 		GLES10.glDepthMask(true);
 		GLES10.glEnable(GLES10.GL_DEPTH_TEST);
 		IngameRenderer.CHAT_STATUS_1 = (char)14+"FPS: "+(1000/(System.currentTimeMillis()-time));
+	}
+	
+	public static void drawText(String str, int start_x, int start_y, int size) {
+		TextureManager.bindTexture(42);
+		 GLES10.glTexParameterx(GLES10.GL_TEXTURE_2D, GLES10.GL_TEXTURE_MAG_FILTER, GLES10.GL_NEAREST);
+	     GLES10.glTexParameterx(GLES10.GL_TEXTURE_2D, GLES10.GL_TEXTURE_MIN_FILTER, GLES10.GL_NEAREST);
+		
+	    Tesselator.INSTANCE.glBegin(GLES10.GL_TRIANGLES);
+		for(int k=0;k!=str.length();k++) {
+			int chr = str.getBytes()[k];
+			if(chr!=32) {
+				float x_pos = start_x+k*size*0.7F;
+			    float y_pos = ClassicByte.view.renderer.height-start_y;
+			    float x_s = size;
+			    float y_s = -size;
+			    
+			    x_pos = x_pos/(float)ClassicByte.view.renderer.width;
+			    y_pos = y_pos/(float)ClassicByte.view.renderer.height;
+			    x_s = x_s/(float)ClassicByte.view.renderer.width;
+			    y_s = y_s/(float)ClassicByte.view.renderer.height;
+			    float x2 = -1.0F+(x_pos*2.0F);
+			    float y2 = 1.0F-(y_pos*2.0F);
+			    float x3 = x2+(x_s*2.0F);
+			    float y3 = y2-(y_s*2.0F);
+			    x2 = (x2*0.5F+0.5F)*ClassicByte.view.renderer.width;
+			    y2 = (y2*0.5F+0.5F)*ClassicByte.view.renderer.height;
+			    x3 = (x3*0.5F+0.5F)*ClassicByte.view.renderer.width;
+			    y3 = (y3*0.5F+0.5F)*ClassicByte.view.renderer.height;
+			    
+			    float tex_x = (chr%16)*0.0625F;
+			    float tex_y = (chr/16)*0.0625F;
+			    float tex_x2 = tex_x+0.0625F;
+			    float tex_y2 = tex_y+0.0625F;
+			    
+			    Tesselator.INSTANCE.glTexCoord2f(tex_x, tex_y);
+			    Tesselator.INSTANCE.glVertex3f(x2, y2, 0.0F);
+			    Tesselator.INSTANCE.glTexCoord2f(tex_x2, tex_y);
+			    Tesselator.INSTANCE.glVertex3f(x3, y2, 0.0F);
+			    Tesselator.INSTANCE.glTexCoord2f(tex_x2, tex_y2);
+			    Tesselator.INSTANCE.glVertex3f(x3, y3, 0.0F);
+			    
+			    Tesselator.INSTANCE.glTexCoord2f(tex_x2, tex_y);
+			    Tesselator.INSTANCE.glVertex3f(x3, y2, 0.0F);
+			    Tesselator.INSTANCE.glTexCoord2f(tex_x2, tex_y2);
+			    Tesselator.INSTANCE.glVertex3f(x3, y3, 0.0F);
+			    Tesselator.INSTANCE.glTexCoord2f(tex_x, tex_y2);
+			    Tesselator.INSTANCE.glVertex3f(x2, y3, 0.0F);
+			}
+		}
+		Tesselator.INSTANCE.glEnd();
+	}
+
+	public static void drawRect(float x, float y, float w, float h) {
+		drawRect((int)x,(int)y,(int)w,(int)h);
+	}
+	
+	public static void drawRect(int x, int y, int w, int h) {
+		float x_pos = x;
+	    float y_pos = ClassicByte.view.renderer.height-y;
+	    float x_s = w;
+	    float y_s = -h;
+	    
+	    x_pos = x_pos/(float)ClassicByte.view.renderer.width;
+	    y_pos = y_pos/(float)ClassicByte.view.renderer.height;
+	    x_s = x_s/(float)ClassicByte.view.renderer.width;
+	    y_s = y_s/(float)ClassicByte.view.renderer.height;
+	    float x2 = -1.0F+(x_pos*2.0F);
+	    float y2 = 1.0F-(y_pos*2.0F);
+	    float x3 = x2+(x_s*2.0F);
+	    float y3 = y2-(y_s*2.0F);
+	    subDraw((x2*0.5F+0.5F)*ClassicByte.view.renderer.width,(y2*0.5F+0.5F)*ClassicByte.view.renderer.height,(x3*0.5F+0.5F)*ClassicByte.view.renderer.width,(y3*0.5F+0.5F)*ClassicByte.view.renderer.height);
+	}
+	
+	private static void subDraw(float x2, float y2, float x3, float y3) {
+		Tesselator.INSTANCE.glBegin(GLES10.GL_TRIANGLE_FAN);
+		Tesselator.INSTANCE.glTexCoord2f(0.0F,0.0F);
+		Tesselator.INSTANCE.glVertex3f(x2, y2, 0.0F);
+		Tesselator.INSTANCE.glTexCoord2f(1.0F,0.0F);
+		Tesselator.INSTANCE.glVertex3f(x3, y2, 0.0F);
+		Tesselator.INSTANCE.glTexCoord2f(1.0F,1.0F);
+		Tesselator.INSTANCE.glVertex3f(x3, y3, 0.0F);
+		Tesselator.INSTANCE.glTexCoord2f(0.0F,1.0F);
+		Tesselator.INSTANCE.glVertex3f(x2, y3, 0.0F);
+		Tesselator.INSTANCE.glEnd();
 	}
 
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
@@ -277,65 +565,70 @@ public class ClassicByteRenderer implements GLSurfaceView.Renderer {
 		TextureManager.loadTextureFromBitmap(TextureManager.scaleBitmap(TextureManager.getBitmap(33), Math.round(this.width*0.06F), Math.round(this.width*0.06F)), 33);
 		TextureManager.loadTextureFromBitmap(TextureManager.scaleBitmap(TextureManager.getBitmap(34), Math.round(this.width*0.06F), Math.round(this.width*0.06F)), 34);
 		TextureManager.loadTextureFromBitmap(TextureManager.scaleBitmap(TextureManager.getBitmap(35), Math.round(this.width*0.06F), Math.round(this.width*0.06F)), 35);
-		TextureManager.loadTextureFromBitmap(TextureManager.scaleBitmap(TextureManager.getBitmap(36), Math.round(this.width*0.2F), Math.round(this.width*0.2F)), 36);
-		TextureManager.loadTextureFromBitmap(TextureManager.scaleBitmap(TextureManager.getBitmap(37), Math.round(this.width*0.08F), Math.round(this.width*0.08F)), 37);
+		/*TextureManager.loadTextureFromBitmap(TextureManager.scaleBitmap(TextureManager.getBitmap(36), Math.round(this.width*0.2F), Math.round(this.width*0.2F)), 36);
+		TextureManager.loadTextureFromBitmap(TextureManager.scaleBitmap(TextureManager.getBitmap(37), Math.round(this.width*0.08F), Math.round(this.width*0.08F)), 37);*/
+		TextureManager.loadTextureFromBitmap(TextureManager.scaleBitmap(TextureManager.getBitmap(41), Math.round(this.width*0.6F), Math.round(this.width*0.6F)), 41);
 	}
 
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		//this.background_music = MediaPlayer.create(this.parent.getContext(), R.drawable.keygsubtonal);
 		//background_music.setLooping(true);
 		//background_music.start();
-        this.parent.setScreen(new ScreenLogin(this.parent));
-		GLES10.glClearColor((156.0F)/256.0F, (205.0F)/256.0F, (255.0F)/256.0F, 1.0F);
+        this.parent.setScreen(new ScreenLogo(this.parent));
 		GLES10.glEnable(GLES10.GL_DEPTH_TEST);
 		GLES10.glDepthFunc(GLES10.GL_LESS);
 		GLES10.glHint(GLES10.GL_PERSPECTIVE_CORRECTION_HINT, GLES10.GL_NICEST);
 		GLES10.glDepthMask(true);
 		GLES10.glFrontFace(GLES10.GL_CW);
-		GLES10.glCullFace(GLES10.GL_BACK);
+		GLES10.glCullFace(GLES10.GL_FRONT);
 		GLES10.glEnable(GLES10.GL_TEXTURE_2D);
 		GLES10.glEnable(GLES10.GL_BLEND);
 		GLES10.glBlendFunc(GLES10.GL_SRC_ALPHA, GLES10.GL_ONE_MINUS_SRC_ALPHA);
 		GLES10.glDisable(GLES10.GL_CULL_FACE);
 		GLES10.glEnable(GLES10.GL_ALPHA_TEST);
-		GLES10.glAlphaFunc(GLES10.GL_GREATER, 0.0F);
+		GLES10.glAlphaFunc(GLES10.GL_GEQUAL, 0.5F);
 		
-		TextureManager.loadTexture(this.context, R.drawable.terrain, 1);
-		TextureManager.loadTexture(this.context, R.drawable.bg_top, 2);
-		TextureManager.loadTexture(this.context, R.drawable.bg_main, 3);
-		TextureManager.loadTexture(this.context, R.drawable.logo, 4);
-		TextureManager.loadTexture(this.context, R.drawable.button, 5);
-		TextureManager.loadTexture(this.context, R.drawable.button_highlighted, 6);
-		TextureManager.loadTexture(this.context, R.drawable.button_big, 7);
-		TextureManager.loadTexture(this.context, R.drawable.button_big_highlighted, 8);
-		TextureManager.loadTexture(this.context, R.drawable.donate, 9);
-		TextureManager.loadTexture(this.context, R.drawable.server_list_entry, 10);
-		TextureManager.loadTexture(this.context, R.drawable.map_background, 11);
-		TextureManager.loadTexture(this.context, R.drawable.terrain_map, 12);
-		TextureManager.loadTexture(this.context, R.drawable.login_information_field, 13);
-		TextureManager.loadTexture(this.context, R.drawable.button_login, 14);
-		TextureManager.loadTexture(this.context, R.drawable.button_change, 15);
-		TextureManager.loadTexture(this.context, R.drawable.button_login_highlighted, 16);
-		TextureManager.loadTexture(this.context, R.drawable.button_change_highlighted, 17);
-		TextureManager.loadTexture(this.context, R.drawable.loading_background_a, 18);
-		TextureManager.loadTexture(this.context, R.drawable.loading_background_b, 19);
-		TextureManager.loadTexture(this.context, R.drawable.info_background, 21);
-		TextureManager.loadTexture(this.context, R.drawable.button_down, 22);
-		TextureManager.loadTexture(this.context, R.drawable.button_down_highlighted, 23);
-		TextureManager.loadTexture(this.context, R.drawable.button_up, 24);
-		TextureManager.loadTexture(this.context, R.drawable.button_up_highlighted, 25);
-		TextureManager.loadTexture(this.context, R.drawable.button_scrollbar, 26);
-		TextureManager.loadTexture(this.context, R.drawable.button_chat, 27);
-		TextureManager.loadTexture(this.context, R.drawable.button_chat_highlighted, 28);
-		TextureManager.loadTexture(this.context, R.drawable.button_jump, 29);
-		TextureManager.loadTexture(this.context, R.drawable.button_jump_highlighted, 30);
-		TextureManager.loadTexture(this.context, R.drawable.skin, 31);
-		TextureManager.loadTexture(this.context, R.drawable.button_list, 32);
-		TextureManager.loadTexture(this.context, R.drawable.button_list_highlighted, 33);
-		TextureManager.loadTexture(this.context, R.drawable.button_blocks, 34);
-		TextureManager.loadTexture(this.context, R.drawable.button_blocks_highlighted, 35);
-		TextureManager.loadTexture(this.context, R.drawable.touch_controls, 36);
-		TextureManager.loadTexture(this.context, R.drawable.touch_controls_joystick, 37);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.terrain, 1);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.bg_top, 2);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.bg_main, 3);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.logo, 4);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button, 5);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_highlighted, 6);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_big, 7);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_big_highlighted, 8);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.donate, 9);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.server_list_entry, 10);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.map_background, 11);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.terrain_map, 12);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.login_information_field, 13);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_login, 14);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_change, 15);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_login_highlighted, 16);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_change_highlighted, 17);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.loading_background_a, 18);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.loading_background_b, 19);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.info_background, 21);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_down, 22);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_down_highlighted, 23);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_up, 24);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_up_highlighted, 25);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_scrollbar, 26);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_chat, 27);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_chat_highlighted, 28);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_jump, 29);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_jump_highlighted, 30);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.skin, 31);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_list, 32);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_list_highlighted, 33);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_blocks, 34);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.button_blocks_highlighted, 35);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.touch_controls, 36);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.touch_controls_joystick, 37);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.clouds, 38);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.rock, 39);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.water, 40);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.creator_logo, 41);
+		TextureManager.loadTexture(this.parent.getContext(), R.drawable.font, 42);
 	}
 	
 }

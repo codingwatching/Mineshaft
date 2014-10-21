@@ -1,5 +1,5 @@
 /*
-Ace of Spades remake
+Mineshaft
 Copyright (C) 2014 ByteBit
 
 This program is free software; you can redistribute it and/or modify it under the terms of
@@ -21,77 +21,78 @@ import android.graphics.Color;
 
 public class Block {
 	
-	/*--------------Default blocks--------------*/
-	
-	public static final int BLOCK_AIR = 0;
-	public static final int BLOCK_STONE = 1;
-	public static final int BLOCK_GRASS = 2;
-	public static final int BLOCK_DIRT = 3;
-	public static final int BLOCK_COBBLESTONE = 4;
-	public static final int BLOCK_WOOD = 5;
-	public static final int BLOCK_SAPLING = 6;
-	public static final int BLOCK_BEDROCK = 7;
-	public static final int BLOCK_WATER = 8;
-	public static final int BLOCK_WATER_STATIC = 9;
-	public static final int BLOCK_LAVA = 10;
-	public static final int BLOCK_LAVA_STATIC = 11;
-	public static final int BLOCK_SAND = 12;
-	public static final int BLOCK_GRAVEL = 13;
-	public static final int BLOCK_GOLD_ORE = 14;
-	public static final int BLOCK_IRON_ORE = 15;
-	public static final int BLOCK_COAL_ORE = 16;
-	public static final int BLOCK_LOG = 17;
-	public static final int BLOCK_LEAVES = 18;
-	public static final int BLOCK_SPONGE = 19;
-	public static final int BLOCK_GLASS = 20;
-	public static final int BLOCK_RED_CLOTH = 21;
-	public static final int BLOCK_ORANGE_CLOTH = 22;
-	public static final int BLOCK_YELLOW_CLOTH = 23;
-	public static final int BLOCK_LIME_CLOTH = 24;
-	public static final int BLOCK_GREEN_CLOTH = 25;
-	public static final int BLOCK_AQUA_GREEN_CLOTH = 26;
-	public static final int BLOCK_CYAN_CLOTH = 27;
-	public static final int BLOCK_BLUE_CLOTH = 28;
-	public static final int BLOCK_PURPLE_CLOTH = 29;
-	public static final int BLOCK_INDIGO_CLOTH = 30;
-	public static final int BLOCK_VIOLET_CLOTH = 31;
-	public static final int BLOCK_MAGENTA_CLOTH = 32;
-	public static final int BLOCK_PINK_CLOTH = 33;
-	public static final int BLOCK_BLACK_CLOTH = 34;
-	public static final int BLOCK_GRAY_CLOTH = 35;
-	public static final int BLOCK_WHITE_CLOTH = 36;
-	public static final int BLOCK_DANDELION = 37;
-	public static final int BLOCK_ROSE = 38;
-	public static final int BLOCK_BROWN_MUSHROOM = 39;
-	public static final int BLOCK_RED_MUSHROOM = 40;
-	public static final int BLOCK_GOLD_BLOCK = 41;
-	public static final int BLOCK_IRON_BLOCK = 42;
-	public static final int BLOCK_DOUBLE_SLAP = 43;
-	public static final int BLOCK_SLAB = 44;
-	public static final int BLOCK_BRICK_BLOCK = 45;
-	public static final int BLOCK_TNT = 46;
-	public static final int BLOCK_BOOKSHELF = 47;
-	public static final int BLOCK_MOSSSTONE = 48;
-	public static final int BLOCK_OBSIDIAN = 49;
+	/*--------------Default blocks-------------*/
+	public static final int BLOCK_AIR				= 0x00;
+	public static final int BLOCK_STONE				= 0x01;
+	public static final int BLOCK_GRASS				= 0x02;
+	public static final int BLOCK_DIRT				= 0x03;
+	public static final int BLOCK_COBBLESTONE		= 0x04;
+	public static final int BLOCK_WOOD				= 0x05;
+	public static final int BLOCK_SAPLING			= 0x06;
+	public static final int BLOCK_BEDROCK			= 0x07;
+	public static final int BLOCK_WATER				= 0x08;
+	public static final int BLOCK_WATER_STATIC		= 0x09;
+	public static final int BLOCK_LAVA				= 0x0A;
+	public static final int BLOCK_LAVA_STATIC		= 0x0B;
+	public static final int BLOCK_SAND				= 0x0C;
+	public static final int BLOCK_GRAVEL			= 0x0D;
+	public static final int BLOCK_GOLD_ORE			= 0x0E;
+	public static final int BLOCK_IRON_ORE			= 0x0F;
+	public static final int BLOCK_COAL_ORE			= 0x10;
+	public static final int BLOCK_LOG				= 0x11;
+	public static final int BLOCK_LEAVES			= 0x12;
+	public static final int BLOCK_SPONGE			= 0x13;
+	public static final int BLOCK_GLASS				= 0x14;
+	public static final int BLOCK_RED_CLOTH			= 0x15;
+	public static final int BLOCK_ORANGE_CLOTH		= 0x16;
+	public static final int BLOCK_YELLOW_CLOTH		= 0x17;
+	public static final int BLOCK_LIME_CLOTH		= 0x18;
+	public static final int BLOCK_GREEN_CLOTH		= 0x19;
+	public static final int BLOCK_AQUA_GREEN_CLOTH	= 0x1A;
+	public static final int BLOCK_CYAN_CLOTH		= 0x1B;
+	public static final int BLOCK_BLUE_CLOTH		= 0x1C;
+	public static final int BLOCK_PURPLE_CLOTH		= 0x1D;
+	public static final int BLOCK_INDIGO_CLOTH		= 0x1E;
+	public static final int BLOCK_VIOLET_CLOTH		= 0x1F;
+	public static final int BLOCK_MAGENTA_CLOTH		= 0x20;
+	public static final int BLOCK_PINK_CLOTH		= 0x21;
+	public static final int BLOCK_BLACK_CLOTH		= 0x22;
+	public static final int BLOCK_GRAY_CLOTH		= 0x23;
+	public static final int BLOCK_WHITE_CLOTH		= 0x24;
+	public static final int BLOCK_DANDELION			= 0x25;
+	public static final int BLOCK_ROSE				= 0x26;
+	public static final int BLOCK_BROWN_MUSHROOM	= 0x27;
+	public static final int BLOCK_RED_MUSHROOM		= 0x28;
+	public static final int BLOCK_GOLD_BLOCK		= 0x29;
+	public static final int BLOCK_IRON_BLOCK		= 0x2A;
+	public static final int BLOCK_DOUBLE_SLAP		= 0x2B;
+	public static final int BLOCK_SLAB				= 0x2C;
+	public static final int BLOCK_BRICK_BLOCK		= 0x2D;
+	public static final int BLOCK_TNT				= 0x2E;
+	public static final int BLOCK_BOOKSHELF			= 0x2F;
+	public static final int BLOCK_MOSSSTONE			= 0x30;
+	public static final int BLOCK_OBSIDIAN			= 0x31;
 	
 	/*----------Block Support Level 1----------*/
+	public static final int BLOCK_COBBLESTONESLAB	= 0x32;
+	public static final int BLOCK_ROPE				= 0x33;
+	public static final int BLOCK_SANDSTONE			= 0x34;
+	public static final int BLOCK_SNOW				= 0x35;
+	public static final int BLOCK_FIRE				= 0x36;
+	public static final int BLOCK_LIGHTPINKWOOL		= 0x37;
+	public static final int BLOCK_FORESTGREENWOOL	= 0x38;
+	public static final int BLOCK_BROWNWOOL			= 0x39;
+	public static final int BLOCK_DEEPBLUE			= 0x3A;
+	public static final int BLOCK_TURQUOISE			= 0x3B;
+	public static final int BLOCK_ICE				= 0x3C;
+	public static final int BLOCK_CERAMICTILE		= 0x3D;
+	public static final int BLOCK_MAGMA				= 0x3E;
+	public static final int BLOCK_PILLAR			= 0x3F;
+	public static final int BLOCK_CRATE				= 0x40;
+	public static final int BLOCK_STONEBRICK		= 0x41;
 	
-	public static final int BLOCK_COBBLESTONESLAB = 0x32;
-	public static final int BLOCK_ROPE = 0x33;
-	public static final int BLOCK_SANDSTONE = 0x34;
-	public static final int BLOCK_SNOW = 0x35;
-	public static final int BLOCK_FIRE = 0x36;
-	public static final int BLOCK_LIGHTPINKWOOL = 0x37;
-	public static final int BLOCK_FORESTGREENWOOL = 0x38;
-	public static final int BLOCK_BROWNWOOL = 0x39;
-	public static final int BLOCK_DEEPBLUE = 0x3A;
-	public static final int BLOCK_TURQUOISE = 0x3B;
-	public static final int BLOCK_ICE = 0x3C;
-	public static final int BLOCK_CERAMICTILE = 0x3D;
-	public static final int BLOCK_MAGMA = 0x3E;
-	public static final int BLOCK_PILLAR = 0x3F;
-	public static final int BLOCK_CRATE = 0x40;
-	public static final int BLOCK_STONEBRICK = 0x41;
+	/*--------------Undefinied block--------------*/
+	public static final int BLOCK_UNDEFINIED			= 0xFF;
 	
 	public static boolean canGoTrough(int block_id) {
 		if(block_id==Block.BLOCK_WATER || block_id==Block.BLOCK_WATER_STATIC || block_id==Block.BLOCK_LAVA || block_id==Block.BLOCK_LAVA_STATIC || block_id==Block.BLOCK_AIR || block_id==Block.BLOCK_FIRE || block_id==Block.BLOCK_ROPE || block_id==Block.BLOCK_SNOW || block_id==Block.BLOCK_SAPLING || block_id==Block.BLOCK_RED_MUSHROOM || block_id==Block.BLOCK_BROWN_MUSHROOM || block_id==Block.BLOCK_DANDELION || block_id==Block.BLOCK_ROSE) {
@@ -113,6 +114,7 @@ public class Block {
 	
 	public static String getName(int block_id) {
 		switch(block_id) {
+			case BLOCK_AIR: return "Air";
 			case BLOCK_STONE: return "Stone";
 			case BLOCK_GRASS: return "Grass";
 			case BLOCK_DIRT: return "Dirt";
@@ -182,7 +184,21 @@ public class Block {
 		return "Future Block";
 	}
 	
+	public static boolean renderSideIfConnectedToSameType(int block_id) {
+		if(block_id==Block.BLOCK_WATER || block_id==Block.BLOCK_WATER_STATIC || block_id==Block.BLOCK_GLASS) {
+			return false;
+		}
+		if(!Options.fancy_graphics && block_id==Block.BLOCK_LEAVES) {
+			return false;
+		}
+		return true;
+	}
+	
 	public static boolean isTranslucent(int block_id) {
+		if(block_id==Block.BLOCK_AIR) {
+			return true;
+		}
+		
 		if(Options.fancy_graphics) {
 			if(block_id==Block.BLOCK_GLASS) {
 				return true;
@@ -196,12 +212,10 @@ public class Block {
 			if(block_id==Block.BLOCK_WATER_STATIC) {
 				return true;
 			}
-			if(block_id==Block.BLOCK_LAVA) {
-				return true;
-			}
-			if(block_id==Block.BLOCK_LAVA_STATIC) {
-				return true;
-			}
+		}
+		
+		if(block_id==Block.BLOCK_ROPE || block_id==Block.BLOCK_ROSE || block_id==Block.BLOCK_DANDELION || block_id==Block.BLOCK_BROWN_MUSHROOM || block_id==Block.BLOCK_RED_MUSHROOM || block_id==Block.BLOCK_FIRE || block_id==Block.BLOCK_SAPLING) {
+			return true;
 		}
 		
 		if(block_id==Block.BLOCK_SLAB) {
@@ -213,14 +227,6 @@ public class Block {
 		}
 		
 		if(block_id==Block.BLOCK_SNOW) {
-			return true;
-		}
-		
-		if(block_id==Block.BLOCK_AIR) {
-			return true;
-		}
-		
-		if(block_id==Block.BLOCK_ROPE || block_id==Block.BLOCK_ROSE || block_id==Block.BLOCK_DANDELION || block_id==Block.BLOCK_BROWNWOOL || block_id==Block.BLOCK_RED_MUSHROOM || block_id==Block.BLOCK_FIRE || block_id==Block.BLOCK_SAPLING) {
 			return true;
 		}
 		
